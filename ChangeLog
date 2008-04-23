@@ -1,0 +1,10 @@
+2008-04-23 09:50 -0400  djerius  <djerius@cfa.harvard.edu>  (2432576f7d70 [tip])
+
+	* Changes, MANIFEST.SKIP, Makefile.PL, README, lib/CXC/PDL/Hist1D.pd,
+	lib/CXC/PDL/hist_sdev.pd, t/00-load.t, t/hist_sdev.t,
+	t/perlcritic.t, t/pod-coverage.t, t/pod.t: new file.
+	* Changes, MANIFEST.SKIP, Makefile.PL, README, lib/CXC/PDL/Hist1D.pd,
+	lib/CXC/PDL/hist_sdev.pd, t/00-load.t, t/hist_sdev.t,
+	t/perlcritic.t, t/pod-coverage.t, t/pod.t:
+	initial import
+
