@@ -34,6 +34,23 @@ use warnings;
 BEGIN{ our \$VERSION = '$VERSION' };
 EOD
 
+pp_addpm( { At => 'Top'}, q{
+=begin dealing with undocumented boilerplate routines
+
+=over
+
+=item set_boundscheck
+
+=item set_debugging
+
+=back
+
+=end dealing with undocumented boilerplate routines
+=cut
+});
+
+
+
 pp_addpm( { At => 'Top'}, <<"EOD" );
 
 =head1 NAME
@@ -81,19 +98,6 @@ may find a copy at
 });
 
 require 'hist_sdev.pd';
-
-pp_addpm( { At => 'Bot'}, q{
-=for dealing with undocumented boilerplate routines
-
-=over
-
-=item set_boundscheck
-=item set_debugging
-
-=back
-
-=cut
-});
 
 pp_done();
 
