@@ -1,0 +1,99 @@
+# --8<--8<--8<--8<--
+#
+# Copyright (C) 2008 Smithsonian Astrophysical Observatory
+#
+# This file is part of CXC::PDL::Hist1D
+#
+# CXC::PDL::Hist1D is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# -->8-->8-->8-->8--
+
+use strict;
+use warnings;
+
+# actual code is broken out into separate files for
+# easier maintenance
+use lib 'lib/CXC/PDL';
+
+our $VERSION = '0.01';
+
+pp_addpm({At => 'Top'}, <<"EOD" );
+use strict;
+use warnings;
+BEGIN{ our \$VERSION = '$VERSION' };
+EOD
+
+pp_addpm( { At => 'Top'}, <<"EOD" );
+
+=head1 NAME
+
+CXC::PDL::Hist1D - one dimensional histogram functions
+
+=head1 SYNOPSIS
+
+  use PDL;
+  use CXC::PDL::Hist1D;
+
+=head1 DESCRIPTION
+
+This module provides various histogramming functions.  This module is
+a test bed for future inclusion in a PDL::Histogram class.
+
+All functions are made available in the B<PDL> namespace.
+
+=head1 FUNCTIONS
+
+EOD
+
+pp_addpm( { At => 'Bot'}, q{
+
+=head1 BUGS AND LIMITATIONS
+
+No bugs have been reported.
+
+=head1 AUTHOR
+
+Diab Jerius, E<lt>djerius@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007-2008 Smithsonian Astrophysical Observatory
+
+This software is released under the GNU General Public License.  You
+may find a copy at
+
+          http://www.gnu.org/licenses
+
+
+=cut
+
+});
+
+require 'hist_sdev.pd';
+
+pp_addpm( { At => 'Bot'}, q{
+=for dealing with undocumented boilerplate routines
+
+=over
+
+=item set_boundscheck
+=item set_debugging
+
+=back
+
+=cut
+});
+
+pp_done();
+
