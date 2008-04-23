@@ -1,30 +1,21 @@
 #!perl
 
+use strict;
+use warnings;
+
 use PDL;
-use Test::More tests => 13;
+use Test::More tests => 6;
 
 BEGIN {
   use_ok('CXC::PDL::Hist1D');
 }
 
+my $data = random( 1000 );
 
-my $data = sequence(20);
-
-test_it( min_sn => 3,
+test_it( min_sn => 20,
          min_nelem => 2,
          data  => $data,
-         bin   => pdl( qw[0 0 0 0 0 0 0 1 1 2 2 3 3 4 4 5 5 6 6 6] ),
-         hist  => pdl( qw[21 15 19 23 27 31 54] ),
-         nelem => pdl( qw[7 2 2 2 2 2 3] ),
-         sdev  => pdl( qw[2 0.5 0.5 0.5 0.5 0.5 0.81649658] ),
-         min   => pdl( qw[0 7 9 11 13 15 17] ),
-         max   => pdl( qw[6 8 10 12 14 16 19] ),
-         imin  => pdl( qw[0 7 9 11 13 15 17] ),
-         imax  => pdl( qw[6 8 10 12 14 16 19] ),
        );
-
-
-
 
 sub test_it {
 
@@ -32,31 +23,58 @@ sub test_it {
 
     my $testid = "sn: $in{min_sn}; nelem: $in{min_nelem}";
 
-    my $out = $in{data}->hist_sdev( $in{min_sn}, $in{min_nelem} );
-    my %out = %{$out};
+    my %out = $in{data}->hist_sdev( $in{min_sn}, $in{min_nelem} );
 
-    for my $field ( qw( bin hist nelem min max imin imax ) )
+    my $nbins = $out{sum}->nelem;
+
+    # check if sum & standard deviation is calculated correctly
+
+    my @sdev;
+    my @sum;
+    for my $bin ( 0..$nbins-1 )
     {
-#        print "$field => pdl( qw$out{$field} ),\n";
-        ok( all( $out->{$field} == $in{$field} ),   "$testid: $field" );
+        my ( $ifirst, $ilast ) = ( $out{ifirst}->at($bin), $out{ilast}->at($bin) );
+
+        my $slice = $in{data}->mslice([$ifirst,$ilast]);
+
+        push @sum, $slice->sum;
+
+        my ($mean,$prms,$median,$min,$max,$adev,$rms)
+          = $slice->stats;
+
+        push @sdev, $rms;
     }
 
-    # deal with roundoff due to using a string rather than a number.
-    ok( all( approx $out{sdev}, $in{sdev}, 1e-4 ),   "$testid: sdev" );
+
+    ok( all( approx $out{sdev}, pdl(@sdev), 1e-8 ), "$testid: sdev" );
+    ok( all( approx $out{sum}, pdl(@sum), 1e-8 ), "$testid: sum" );
 
 
-
-    my $idx = which( $out{nelem} > 0 );
-
-    ok ( all( $out{hist}->index($idx) / $out{sdev}->index($idx) >= $in{min_sn} ),
-         "$testid: check S/N" );
-
+    # make sure that the minimum number of elements is in each bin
     ok ( all( $out{nelem} >= $in{min_nelem} ),
          "$testid: check nelem" );
 
-    ok ( all( $out{min} == $in{data}->index( $out{imin} ) ),
-         "$testid: check min" );
+    # check if signal to noise ratio is greater than requested min
+    ok ( all( $out{sum} / $out{sdev} >= $in{min_sn} ),
+         "$testid: check S/N" );
 
-    ok ( all( $out{max} == $in{data}->index( $out{imax} ) ),
-         "$testid: check min" );
+
+    # make sure that the minimum possible S/N was actually returned
+    # last bin may have be folded, so ignore it. also ignore
+    # bins with the minimum number of elements.
+    my @sn;
+    for my $bin ( 0..$nbins-2 )
+    {
+        next unless $out{nelem}->at($bin) > $in{min_nelem};
+
+        my ( $ifirst, $ilast ) = ( $out{ifirst}->at($bin), $out{ilast}->at($bin) );
+
+        $ilast--;
+
+        my $slice = $in{data}->mslice([$ifirst,$ilast]);
+
+        push @sn, $slice->sum / ($slice->stats)[-1];
+    }
+
+    ok ( all( pdl(@sn) < $in{min_sn} ), "$testid: check S/N min" );
 }

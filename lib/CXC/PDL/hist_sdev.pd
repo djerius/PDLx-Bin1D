@@ -3,18 +3,15 @@ pp_def('hist_sdev',
                      'signal(n)',
                      'int [o] bin(n)',
                      'int [o] nbins()',
-                     'double [o] hist(n)',
+                     'double [o] sum(n)',
                      'int [o] nelem(n)',
                      'double [o] sdev(n)',
-		     'double [o] min(n)',
-		     'double [o] max(n)',
-		     'int [o] imin(n)',
-		     'int [o] imax(n)',
+		     'int [o] ifirst(n)',
+		     'int [o] ilast(n)',
 		      ),
        OtherPars => join(';', 'double min_sn', 'long min_nelem' ),
        Code => q{
                 int curind = 0;         /* index of current bin */
-		double signal;		/* the signal value */
                 double sum2 = 0;        /* sum of signal**2 in current bin */
                 double sum = 0;         /* sum of signal in current bin */
                 int nin = 0;            /* number of elements in the current bin */
@@ -23,32 +20,30 @@ pp_def('hist_sdev',
                 double psum = 0;         /* sum of signal in previous bin */
                 int pnin = 0;            /* number of elements in previous bin */
 
-                double min_sn2 = $COMP(min_sn) * $COMP(min_sn);
                 double sdev2;           /* square of instantaneous standard deviation */
                 loop(n) %{
-                    signal = $signal();
-                    double signal2 = signal * signal;
+                    double sumsq;
+		    double signal = $signal();
+		    double signal2 = signal * signal;
                     sum  += signal;
                     sum2 += signal2;
                     nin++;
                     $bin() = curind;
 
-                    sdev2 = (sum2 - sum * sum / nin ) / nin;
+		    /* rearranged to avoid possible sum * sum overflow */
+                    sdev2 = sum2 / nin - ( sum / nin ) * ( sum / nin );
 
 		    if ( nin == 1 )
-		    {
-		      $min( n => curind ) = signal;
-		      $imin( n => curind ) = n;
-		    }		      
+		      $ifirst( n => curind ) = n;
+
 
                     if (   nin >= $COMP(min_nelem) 
-		        && signal2/sdev2 >= min_sn2  )
+		        && sum / sqrt(sdev2) >= $COMP(min_sn)  )
                     {
-                        $hist( n => curind ) = sum;
+                        $sum( n => curind ) = sum;
                         $sdev( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
-      			$max( n => curind ) = signal;
-      			$imax( n => curind ) = n;
+      			$ilast( n => curind ) = n;
 			psum2 = sum2;
 			psum  = sum;
 			pnin  = nin;
@@ -75,11 +70,10 @@ pp_def('hist_sdev',
 			   sdev2 = (sum2 - sum * sum / nin ) / nin;
 			}	
 
-			$hist( n => curind ) = sum;
+			$sum( n => curind ) = sum;
 			$sdev( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
-			$max( n => curind ) = signal;
-			$imax( n => curind ) = $SIZE(n)-1;
+			$ilast( n => curind ) = $SIZE(n)-1;
                     }
                 /* adjust for possibility of last bin being empty */
                 $nbins() = curind + ( nin != 0 );
@@ -95,28 +89,23 @@ pp_def('hist_sdev',
 
             PDL::_hist_sdev_int( $vec, (my $bin = null()),
         			       (my $nbins = null()),
-        			       (my $hist = null()),
+        			       (my $sum = null()),
         			       (my $nelem = null()),
         			       (my $sdev = null()),
-        			       (my $min = null()),
-        			       (my $max = null()),
-        			       (my $imin = null()),
-        			       (my $imax = null()),
+        			       (my $ifirst = null()),
+        			       (my $ilast = null()),
         			        $min_sn, $min_nelem
         			    );
             $nbins--;
 
-	    return wantarray ? (map { $_->slice("0:$nbins")->copy} $hist, $min)
-	                     : { bin => $bin,
-			          map { $_->[0], $_->[1]->slice("0:$nbins")->copy} 
-				         [ hist => $hist],
-					 [ nelem => $nelem],
-					 [ sdev  => $sdev],
-					 [ min   => $min],
-					 [ max   => $max],
-					 [ imin  => $imin],
-					 [ imax  => $imax],
-			       };
+	    return ( bin => $bin,
+	              map { $_->[0], $_->[1]->slice("0:$nbins")->copy} 
+			         [ sum    => $sum],
+				 [ nelem  => $nelem],
+				 [ sdev   => $sdev],
+				 [ ifirst => $ifirst],
+				 [ ilast  => $ilast],
+		   );
         }
       },
       Doc => undef
@@ -128,20 +117,20 @@ pp_addpm( { At => 'Top'}, q{
 
 =for usage
 
-  # scalar context returns hashref
-  $hashref = $pdl->hist_sdev( $min_sn);
-
-  # list context returns ($hist, $min )
-  ( $hist, $min ) = hist_sdev( $pdl, $min_sn);
-  ( $hist, $min ) = hist_sdev( $pdl, $min_sn, $min_nelem );
+  %hash = $pdl->hist_sdev( $min_sn);
+  %hash = hist_sdev( $pdl, $min_sn, $min_nelem );
 
 =for ref
 
-Adaptively bin a 1D distribution using the standard deviation.
+Adaptively bin a data set using the standard deviation.
 
-B<hist_sdev> bins ordered data into bins whose widths are chosen to
-achieve a minimum signal to noise. The data should be ordered upon
-input.  Binning begins at the start of the data vector.  Bins are
+B<hist_sdev> groups data into bins whose widths are chosen to achieve
+a minimum signal to noise.  The data are typically dependent values
+(e.g. flux as a function of energy or counts as a function of radius).
+The data should be sorted by the independent variable (e.g. energy or
+radius).
+
+Binning begins at the start of the data vector.  Bins are
 grown until the minimum signal to noise ratio (specified by
 B<$min_sn>) is met, where the signal is the sum of the data and the
 noise is the standard deviation of the data in the bin.  If the final
@@ -150,19 +139,17 @@ bin.  In order to avoid singularities in the signal to noise, bins
 must have a minimum of two elements; the exact number may be specified
 by the optional B<$min_nelem> parameter.
 
-When called in a list context, B<hist_sdev> returns the binned data
-and the minimum bin values. In a scalar context, B<hist_sdev> returns a
-hashref with the following entries:
+B<hist_sdev> returns a hash with the following entries:
 
 =over
 
 =item C<bin>
 
-The histogram indices for the elements in the input data piddle.
+The bin indices for the elements in the input data piddle.
 
-=item C<hist>
+=item C<sum>
 
-The binned data values.
+The sum of the data values in each bin.
 
 =item C<nelem>
 
@@ -170,23 +157,15 @@ The number of data elements in each bin.
 
 =item C<sdev>
 
-The standard deviation of the binned data
+The standard deviation of the data in each bin.
 
-=item C<min>
+=item C<ifirst>
 
-The minimum data value in a bin
+The index into the input data piddle of the first data value in a bin.
 
-=item C<max>
+=item C<ilast>
 
-The maximum data value in a bin.
-
-=item C<imin>
-
-The index into the input data piddle of the minimum data value in a bin.
-
-=item C<imax>
-
-The index into the input data piddle of the maximum data value in a bin.
+The index into the input data piddle of the last data value in a bin.
 
 =back
 
