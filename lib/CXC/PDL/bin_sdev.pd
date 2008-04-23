@@ -1,4 +1,4 @@
-pp_def('hist_sdev',
+pp_def('bin_sdev',
        Pars => join( ';',
                      'signal(n)',
                      'int [o] bin(n)',
@@ -80,14 +80,14 @@ pp_def('hist_sdev',
                    },
        PMCode => q{
         ## no critic ProhibitAccessOfPrivateData
-        sub PDL::hist_sdev {
+        sub PDL::bin_sdev {
             my ( $vec, $min_sn, $min_nelem ) = @_;
 
             $min_nelem ||= 2;
             barf( "minimum number of elements must be at least 2\n" )
               if $min_nelem < 2;
 
-            PDL::_hist_sdev_int( $vec, (my $bin = null()),
+            PDL::_bin_sdev_int( $vec, (my $bin = null()),
         			       (my $nbins = null()),
         			       (my $sum = null()),
         			       (my $nelem = null()),
@@ -113,18 +113,18 @@ pp_def('hist_sdev',
 
 pp_addpm( { At => 'Top'}, q{
 
-=head2 hist_sdev
+=head2 bin_sdev
 
 =for usage
 
-  %hash = $pdl->hist_sdev( $min_sn);
-  %hash = hist_sdev( $pdl, $min_sn, $min_nelem );
+  %hash = $pdl->bin_sdev( $min_sn);
+  %hash = bin_sdev( $pdl, $min_sn, $min_nelem );
 
 =for ref
 
 Adaptively bin a data set using the standard deviation.
 
-B<hist_sdev> groups data into bins whose widths are chosen to achieve
+B<bin_sdev> groups data into bins whose widths are chosen to achieve
 a minimum signal to noise.  The data are typically dependent values
 (e.g. flux as a function of energy or counts as a function of radius).
 The data should be sorted by the independent variable (e.g. energy or
@@ -139,7 +139,7 @@ bin.  In order to avoid singularities in the signal to noise, bins
 must have a minimum of two elements; the exact number may be specified
 by the optional B<$min_nelem> parameter.
 
-B<hist_sdev> returns a hash with the following entries:
+B<bin_sdev> returns a hash with the following entries:
 
 =over
 

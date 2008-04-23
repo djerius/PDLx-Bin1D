@@ -1,4 +1,4 @@
-Revision history for CXC-PDL-Hist1D
+Revision history for CXC-PDL-Bin1D
 
 0.02   Wed Apr 23 10:37:15 EDT 2008
        - hist_sdev now returns indices to the minimum and maximum bin values

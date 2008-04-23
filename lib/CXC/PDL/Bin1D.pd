@@ -2,9 +2,9 @@
 #
 # Copyright (C) 2008 Smithsonian Astrophysical Observatory
 #
-# This file is part of CXC::PDL::Hist1D
+# This file is part of CXC::PDL::Bin1D
 #
-# CXC::PDL::Hist1D is free software: you can redistribute it and/or modify
+# CXC::PDL::Bin1D is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at
 # your option) any later version.
@@ -35,7 +35,7 @@ BEGIN{ our \$VERSION = '$VERSION' };
 EOD
 
 pp_addpm( { At => 'Top'}, q{
-=begin dealing with undocumented boilerplate routines
+=begin dealing_with_undocumented_boilerplate_routines
 
 =over
 
@@ -45,7 +45,7 @@ pp_addpm( { At => 'Top'}, q{
 
 =back
 
-=end dealing with undocumented boilerplate routines
+=end dealing_with_undocumented_boilerplate_routines
 =cut
 });
 
@@ -55,17 +55,17 @@ pp_addpm( { At => 'Top'}, <<"EOD" );
 
 =head1 NAME
 
-CXC::PDL::Hist1D - one dimensional histogram functions
+CXC::PDL::Bin1D - one dimensional binning functions
 
 =head1 SYNOPSIS
 
   use PDL;
-  use CXC::PDL::Hist1D;
+  use CXC::PDL::Bin1D;
 
 =head1 DESCRIPTION
 
-This module provides various histogramming functions.  This module is
-a test bed for future inclusion in a PDL::Histogram class.
+This module provides various data binning functions.  This module is
+a test bed for future inclusion in a PDL::Bin class.
 
 All functions are made available in the B<PDL> namespace.
 
@@ -97,7 +97,7 @@ may find a copy at
 
 });
 
-require 'hist_sdev.pd';
+require 'bin_sdev.pd';
 
 pp_done();
 

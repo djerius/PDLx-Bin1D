@@ -4,10 +4,10 @@ use ExtUtils::MakeMaker;
 use strict;
 use warnings;
 
-our @pprec = ( 'lib/CXC/PDL/Hist1D.pd', 'Hist1D', 'CXC::PDL::Hist1D' );
+our @pprec = ( 'lib/CXC/PDL/Bin1D.pd', 'Bin1D', 'CXC::PDL::Bin1D' );
 my %args = pdlpp_stdargs(\@pprec);
 
-$args{VERSION_FROM} = 'lib/CXC/PDL/Hist1D.pd';
+$args{VERSION_FROM} = 'lib/CXC/PDL/Bin1D.pd';
 
 WriteMakefile( %args );
 

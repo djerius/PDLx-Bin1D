@@ -7,7 +7,7 @@ use PDL;
 use Test::More tests => 6;
 
 BEGIN {
-  use_ok('CXC::PDL::Hist1D');
+  use_ok('CXC::PDL::Bin1D');
 }
 
 my $data = random( 1000 );
@@ -23,7 +23,7 @@ sub test_it {
 
     my $testid = "sn: $in{min_sn}; nelem: $in{min_nelem}";
 
-    my %out = $in{data}->hist_sdev( $in{min_sn}, $in{min_nelem} );
+    my %out = $in{data}->bin_sdev( $in{min_sn}, $in{min_nelem} );
 
     my $nbins = $out{sum}->nelem;
 
