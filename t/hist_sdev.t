@@ -1,7 +1,7 @@
 #!perl
 
 use PDL;
-use Test::More tests => 9;
+use Test::More tests => 13;
 
 BEGIN {
   use_ok('CXC::PDL::Hist1D');
@@ -19,6 +19,8 @@ test_it( min_sn => 3,
          sdev  => pdl( qw[2 0.5 0.5 0.5 0.5 0.5 0.81649658] ),
          min   => pdl( qw[0 7 9 11 13 15 17] ),
          max   => pdl( qw[6 8 10 12 14 16 19] ),
+         imin  => pdl( qw[0 7 9 11 13 15 17] ),
+         imax  => pdl( qw[6 8 10 12 14 16 19] ),
        );
 
 
@@ -33,7 +35,7 @@ sub test_it {
     my $out = $in{data}->hist_sdev( $in{min_sn}, $in{min_nelem} );
     my %out = %{$out};
 
-    for my $field ( qw( bin hist nelem min max ) )
+    for my $field ( qw( bin hist nelem min max imin imax ) )
     {
 #        print "$field => pdl( qw$out{$field} ),\n";
         ok( all( $out->{$field} == $in{$field} ),   "$testid: $field" );
@@ -52,4 +54,9 @@ sub test_it {
     ok ( all( $out{nelem} >= $in{min_nelem} ),
          "$testid: check nelem" );
 
+    ok ( all( $out{min} == $in{data}->index( $out{imin} ) ),
+         "$testid: check min" );
+
+    ok ( all( $out{max} == $in{data}->index( $out{imax} ) ),
+         "$testid: check min" );
 }

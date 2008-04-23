@@ -2,13 +2,16 @@ pp_def('hist_sdev',
        Pars => join( ';',
                      'signal(n)',
                      'int [o] bin(n)',
+                     'int [o] nbins()',
                      'double [o] hist(n)',
                      'int [o] nelem(n)',
                      'double [o] sdev(n)',
 		     'double [o] min(n)',
 		     'double [o] max(n)',
-                     'int [o] nbins()','' ),
-       OtherPars => join(';', 'double min_sn', 'long min_nelem','' ),
+		     'int [o] imin(n)',
+		     'int [o] imax(n)',
+		      ),
+       OtherPars => join(';', 'double min_sn', 'long min_nelem' ),
        Code => q{
                 int curind = 0;         /* index of current bin */
 		double signal;		/* the signal value */
@@ -33,7 +36,10 @@ pp_def('hist_sdev',
                     sdev2 = (sum2 - sum * sum / nin ) / nin;
 
 		    if ( nin == 1 )
+		    {
 		      $min( n => curind ) = signal;
+		      $imin( n => curind ) = n;
+		    }		      
 
                     if (   nin >= $COMP(min_nelem) 
 		        && signal2/sdev2 >= min_sn2  )
@@ -42,6 +48,7 @@ pp_def('hist_sdev',
                         $sdev( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
       			$max( n => curind ) = signal;
+      			$imax( n => curind ) = n;
 			psum2 = sum2;
 			psum  = sum;
 			pnin  = nin;
@@ -72,6 +79,7 @@ pp_def('hist_sdev',
 			$sdev( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
 			$max( n => curind ) = signal;
+			$imax( n => curind ) = $SIZE(n)-1;
                     }
                 /* adjust for possibility of last bin being empty */
                 $nbins() = curind + ( nin != 0 );
@@ -86,12 +94,14 @@ pp_def('hist_sdev',
               if $min_nelem < 2;
 
             PDL::_hist_sdev_int( $vec, (my $bin = null()),
+        			       (my $nbins = null()),
         			       (my $hist = null()),
         			       (my $nelem = null()),
         			       (my $sdev = null()),
         			       (my $min = null()),
         			       (my $max = null()),
-        			       (my $nbins = null()),
+        			       (my $imin = null()),
+        			       (my $imax = null()),
         			        $min_sn, $min_nelem
         			    );
             $nbins--;
@@ -102,8 +112,11 @@ pp_def('hist_sdev',
 				         [ hist => $hist],
 					 [ nelem => $nelem],
 					 [ sdev  => $sdev],
-					 [ min   =>  $min],
-					 [ max   => $max]  };
+					 [ min   => $min],
+					 [ max   => $max],
+					 [ imin  => $imin],
+					 [ imax  => $imax],
+			       };
         }
       },
       Doc => undef
@@ -145,12 +158,11 @@ hashref with the following entries:
 
 =item C<bin>
 
-This is a piddle containing the histogram indices for the elements in
-the input data piddle.
+The histogram indices for the elements in the input data piddle.
 
 =item C<hist>
 
-The binned data values
+The binned data values.
 
 =item C<nelem>
 
@@ -166,7 +178,15 @@ The minimum data value in a bin
 
 =item C<max>
 
-The maximum data value in a bin
+The maximum data value in a bin.
+
+=item C<imin>
+
+The index into the input data piddle of the minimum data value in a bin.
+
+=item C<imax>
+
+The index into the input data piddle of the maximum data value in a bin.
 
 =back
 
