@@ -1,4 +1,21 @@
-2008-04-23 09:50 -0400  djerius  <djerius@cfa.harvard.edu>  (2432576f7d70 [tip])
+2008-04-23 10:36 -0400  djerius  <djerius@cfa.harvard.edu>  (87c2cfe5ca30 [tip])
+
+	* lib/CXC/PDL/Hist1D.pd, lib/CXC/PDL/hist_sdev.pd, t/hist_sdev.t:
+	hist_sdev now returns imin and imax
+
+2008-04-23 09:50 -0400  djerius  <djerius@cfa.harvard.edu>  (b629708ff115)
+
+	* .hgtags: new file.
+	* .hgtags:
+	Added tag 0.01 for changeset d41a01e7d88d
+
+2008-04-23 09:50 -0400  djerius  <djerius@cfa.harvard.edu>  (d41a01e7d88d [0.01])
+
+	* ChangeLog: new file.
+	* ChangeLog:
+	update for release
+
+2008-04-23 09:50 -0400  djerius  <djerius@cfa.harvard.edu>  (2432576f7d70)
 
 	* Changes, MANIFEST.SKIP, Makefile.PL, README, lib/CXC/PDL/Hist1D.pd,
 	lib/CXC/PDL/hist_sdev.pd, t/00-load.t, t/hist_sdev.t,
