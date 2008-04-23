@@ -8,19 +8,17 @@ pp_def('bin_sdev',
                      'double [o] sdev(n)',
 		     'int [o] ifirst(n)',
 		     'int [o] ilast(n)',
+		     'double [t] sum2(n)',
 		      ),
        OtherPars => join(';', 'double min_sn', 'long min_nelem' ),
        Code => q{
                 int curind = 0;         /* index of current bin */
                 double sum2 = 0;        /* sum of signal**2 in current bin */
                 double sum = 0;         /* sum of signal in current bin */
-                int nin = 0;            /* number of elements in the current bin */
-
-                double psum2 = 0;        /* sum of signal**2 in previous bin */
-                double psum = 0;         /* sum of signal in previous bin */
-                int pnin = 0;            /* number of elements in previous bin */
-
-                double sdev2;           /* square of instantaneous standard deviation */
+                int nin = 0;            /* number of elements in the 
+					   current bin */
+                double sdev2;           /* square of instantaneous
+					   standard deviation */
                 loop(n) %{
                     double sumsq;
 		    double signal = $signal();
@@ -44,9 +42,7 @@ pp_def('bin_sdev',
                         $sdev( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
       			$ilast( n => curind ) = n;
-			psum2 = sum2;
-			psum  = sum;
-			pnin  = nin;
+			$sum2( n => curind) = sum2;
                         sum2 = sum = nin = 0;
                         curind++;
                     }
@@ -54,9 +50,23 @@ pp_def('bin_sdev',
 		    /* record last bin if it's not empty */
                     if ( nin )
                     {
+#if 0
+		      int ii;
+		      for ( ii = 0 ; ii < curind ; ii++ )
+			   fprintf ( stderr, "%d: %d %g %g %g\n",
+			   ii, $nelem( n => ii ),
+			   $sum( n => ii ),
+			   $sdev( n => ii ),
+			   $sum( n => ii ) / $sdev( n => ii ) );
+#endif
+
 		        /* a non empty bin means that its S/N is too low.
-			   fold it into the previous bin if possible */
-			if ( curind > 0 )
+			   fold it into the previous bin if possible.
+			   sometimes that will actually lower the S/N
+			   of the previous bin; keep going until we
+			   can't fold anymore or we get the proper S/N
+			    */
+			while ( curind > 0  )
 			{
 			   int ni;
 			   curind -=1;
@@ -64,16 +74,30 @@ pp_def('bin_sdev',
 			   for (ni = $SIZE(n) - nin ; ni < $SIZE(n) ; ni++ )
 			     $bin( n => ni ) = curind;
 
-			   sum2 += psum2;
-			   sum  += psum;
-			   nin  += pnin;
-			   sdev2 = (sum2 - sum * sum / nin ) / nin;
+			   sum2 += $sum2( n => curind );
+			   sum  += $sum( n => curind );
+			   nin  += $nelem( n => curind );
+			   sdev2 = sum2 / nin - ( sum / nin ) * ( sum / nin );
+
+			   if ( sum / sqrt(sdev2) >= $COMP(min_sn) )
+			     break;
 			}	
 
 			$sum( n => curind ) = sum;
 			$sdev( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
 			$ilast( n => curind ) = $SIZE(n)-1;
+
+#if 0
+			ii = curind;
+			fprintf( stderr, "final: \n" );
+			   fprintf ( stderr, "%d: %d %g %g %g\n",
+			   ii, $nelem( n => ii ),
+			   $sum( n => ii ),
+			   $sdev( n => ii ),
+			   $sum( n => ii ) / $sdev( n => ii ) );
+#endif
+
                     }
                 /* adjust for possibility of last bin being empty */
                 $nbins() = curind + ( nin != 0 );
@@ -94,6 +118,7 @@ pp_def('bin_sdev',
         			       (my $sdev = null()),
         			       (my $ifirst = null()),
         			       (my $ilast = null()),
+				       (null()),
         			        $min_sn, $min_nelem
         			    );
             $nbins--;
