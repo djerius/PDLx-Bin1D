@@ -1,4 +1,28 @@
-2008-04-23 14:45 -0400  djerius  <djerius@cfa.harvard.edu>  (80411582390b [tip])
+2008-04-23 15:57 -0400  djerius  <djerius@cfa.harvard.edu>  (2947e69568d9 [tip])
+
+	* lib/CXC/PDL/bin_sdev.pd:
+	folding of last bin can result in lowered S/N in bin.
+
+	If the last bin has too low a S/N it gets folded into the previous
+	bin. Sometimes this can cause the S/N of that bin to drop below the
+	threshhold. Keep folding the bin until the minimum S/N is reached.
+
+2008-04-23 15:51 -0400  djerius  <djerius@cfa.harvard.edu>  (56ff5e2cb5f9)
+
+	* t/00-load.t:
+	missed rename
+
+2008-04-23 14:47 -0400  djerius  <djerius@cfa.harvard.edu>  (7391c2e41272)
+
+	* .hgtags:
+	Added tag 0.03 for changeset e9fc70a40632
+
+2008-04-23 14:47 -0400  djerius  <djerius@cfa.harvard.edu>  (e9fc70a40632 [0.03])
+
+	* ChangeLog, Changes, lib/CXC/PDL/Bin1D.pd:
+	update for release
+
+2008-04-23 14:45 -0400  djerius  <djerius@cfa.harvard.edu>  (80411582390b)
 
 	* lib/CXC/PDL/Bin1D.pd, lib/CXC/PDL/bin_sdev.pd, t/bin_sdev.t: new
 	file.
