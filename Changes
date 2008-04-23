@@ -1,5 +1,9 @@
 Revision history for CXC-PDL-Bin1D
 
+0.3   Wed Apr 23 14:45:40 EDT 2008
+       - massive bug fixes. last version was quite broken
+       - changed name from hist* to bin* as it's really a binning thing.
+
 0.02   Wed Apr 23 10:37:15 EDT 2008
        - hist_sdev now returns indices to the minimum and maximum bin values
 

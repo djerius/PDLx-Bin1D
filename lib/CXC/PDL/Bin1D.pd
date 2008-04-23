@@ -26,7 +26,7 @@ use warnings;
 # easier maintenance
 use lib 'lib/CXC/PDL';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 pp_addpm({At => 'Top'}, <<"EOD" );
 use strict;

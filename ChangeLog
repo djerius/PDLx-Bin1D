@@ -1,4 +1,44 @@
-2008-04-23 10:36 -0400  djerius  <djerius@cfa.harvard.edu>  (87c2cfe5ca30 [tip])
+2008-04-23 14:45 -0400  djerius  <djerius@cfa.harvard.edu>  (80411582390b [tip])
+
+	* lib/CXC/PDL/Bin1D.pd, lib/CXC/PDL/bin_sdev.pd, t/bin_sdev.t: new
+	file.
+	* lib/CXC/PDL/Hist1D.pd, lib/CXC/PDL/hist_sdev.pd, t/hist_sdev.t:
+	deleted file.
+	* Changes, Makefile.PL, README, lib/CXC/PDL/Bin1D.pd,
+	lib/CXC/PDL/Hist1D.pd, lib/CXC/PDL/bin_sdev.pd,
+	lib/CXC/PDL/hist_sdev.pd, t/bin_sdev.t, t/hist_sdev.t:
+	the code is really a binning code, not a histogramming code. change
+	name(s) to reflect that
+
+2008-04-23 14:38 -0400  djerius  <djerius@cfa.harvard.edu>  (2bd89edd4f27)
+
+	* lib/CXC/PDL/Hist1D.pd:
+	fix up attempt to circumvent documentation bug
+
+2008-04-23 14:30 -0400  djerius  <djerius@cfa.harvard.edu>  (f062238d0c03)
+
+	* lib/CXC/PDL/hist_sdev.pd, t/hist_sdev.t:
+	major bug fixes; it was just plain broken. result has new format.
+
+	The calculations were incorrect as the braindead human used the
+	wrong variable(s) in the wrong spot(s). The code was cleaned up,
+	and fewer output piddles generated, as some were not useful for this
+	type of binning. For einstance, "minimum" or "maximum" values in
+	each bin are meaningless as the data may have some underlying order
+	which doesn't result in a input data set with montonically
+	increasing values.
+
+2008-04-23 10:38 -0400  djerius  <djerius@cfa.harvard.edu>  (8f8831436b6f)
+
+	* .hgtags:
+	Added tag 0.02 for changeset 71aafbba147c
+
+2008-04-23 10:38 -0400  djerius  <djerius@cfa.harvard.edu>  (71aafbba147c [0.02])
+
+	* ChangeLog, Changes:
+	update for release
+
+2008-04-23 10:36 -0400  djerius  <djerius@cfa.harvard.edu>  (87c2cfe5ca30)
 
 	* lib/CXC/PDL/Hist1D.pd, lib/CXC/PDL/hist_sdev.pd, t/hist_sdev.t:
 	hist_sdev now returns imin and imax
