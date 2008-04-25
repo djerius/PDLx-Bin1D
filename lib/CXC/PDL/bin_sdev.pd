@@ -5,12 +5,16 @@ pp_def('bin_sdev',
                      'int [o] nbins()',
                      'double [o] sum(n)',
                      'int [o] nelem(n)',
-                     'double [o] sdev(n)',
+                     'double [o] sigma(n)',
 		     'int [o] ifirst(n)',
 		     'int [o] ilast(n)',
 		     'double [t] sum2(n)',
 		      ),
-       OtherPars => join(';', 'double min_sn', 'long min_nelem' ),
+       OtherPars => join(';',
+		         'double min_sn',
+			 'long nmin',
+			 'long nmax',
+			  ),
        Code => q{
                 int curind = 0;         /* index of current bin */
                 double sum2 = 0;        /* sum of signal**2 in current bin */
@@ -35,11 +39,13 @@ pp_def('bin_sdev',
 		      $ifirst( n => curind ) = n;
 
 
-                    if (   nin >= $COMP(min_nelem) 
-		        && sum / sqrt(sdev2) >= $COMP(min_sn)  )
+                    if (        nin == $COMP(nmax)
+                         || (   nin >= $COMP(nmin)
+			     && sum / sqrt(sdev2) >= $COMP(min_sn)  )
+		       )
                     {
                         $sum( n => curind ) = sum;
-                        $sdev( n => curind ) = sqrt(sdev2);
+                        $sigma( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
       			$ilast( n => curind ) = n;
 			$sum2( n => curind) = sum2;
@@ -56,8 +62,8 @@ pp_def('bin_sdev',
 			   fprintf ( stderr, "%d: %d %g %g %g\n",
 			   ii, $nelem( n => ii ),
 			   $sum( n => ii ),
-			   $sdev( n => ii ),
-			   $sum( n => ii ) / $sdev( n => ii ) );
+			   $sigma( n => ii ),
+			   $sum( n => ii ) / $sigma( n => ii ) );
 #endif
 
 		        /* a non empty bin means that its S/N is too low.
@@ -84,7 +90,7 @@ pp_def('bin_sdev',
 			}	
 
 			$sum( n => curind ) = sum;
-			$sdev( n => curind ) = sqrt(sdev2);
+			$sigma( n => curind ) = sqrt(sdev2);
 			$nelem( n => curind ) = nin;
 			$ilast( n => curind ) = $SIZE(n)-1;
 
@@ -94,8 +100,8 @@ pp_def('bin_sdev',
 			   fprintf ( stderr, "%d: %d %g %g %g\n",
 			   ii, $nelem( n => ii ),
 			   $sum( n => ii ),
-			   $sdev( n => ii ),
-			   $sum( n => ii ) / $sdev( n => ii ) );
+			   $sigma( n => ii ),
+			   $sum( n => ii ) / $sigma( n => ii ) );
 #endif
 
                     }
@@ -105,21 +111,25 @@ pp_def('bin_sdev',
        PMCode => q{
         ## no critic ProhibitAccessOfPrivateData
         sub PDL::bin_sdev {
-            my ( $vec, $min_sn, $min_nelem ) = @_;
+	    my $opts = 'HASH' eq ref $_[-1] ? pop : {};
 
-            $min_nelem ||= 2;
+            my ( $vec, $min_sn ) = @_;
+
+	    my %opt = iparse( { err_sq => 0, nmin => 2, nmax => 0},
+                               $opts );
+
             barf( "minimum number of elements must be at least 2\n" )
-              if $min_nelem < 2;
+              if $opt{nmin} < 2;
 
             PDL::_bin_sdev_int( $vec, (my $bin = null()),
         			       (my $nbins = null()),
         			       (my $sum = null()),
         			       (my $nelem = null()),
-        			       (my $sdev = null()),
+        			       (my $sigma = null()),
         			       (my $ifirst = null()),
         			       (my $ilast = null()),
 				       (null()),
-        			        $min_sn, $min_nelem
+        			        $min_sn, $opt{nmin}, $opt{nmax}
         			    );
             $nbins--;
 
@@ -127,7 +137,7 @@ pp_def('bin_sdev',
 	              map { $_->[0], $_->[1]->slice("0:$nbins")->copy} 
 			         [ sum    => $sum],
 				 [ nelem  => $nelem],
-				 [ sdev   => $sdev],
+				 [ sigma  => $sigma],
 				 [ ifirst => $ifirst],
 				 [ ilast  => $ilast],
 		   );
@@ -142,27 +152,25 @@ pp_addpm( { At => 'Top'}, q{
 
 =for usage
 
-  %hash = $pdl->bin_sdev( $min_sn);
-  %hash = bin_sdev( $pdl, $min_sn, $min_nelem );
+  %hash = bin_sdev( $data, $min_sn, [ \%options ] );
 
 =for ref
 
 Adaptively bin a data set using the standard deviation.
 
-B<bin_sdev> groups data into bins whose widths are chosen to achieve
-a minimum signal to noise.  The data are typically dependent values
-(e.g. flux as a function of energy or counts as a function of radius).
-The data should be sorted by the independent variable (e.g. energy or
-radius).
+B<bin_sdev> groups data into bins whose widths are chosen to achieve a
+minimum signal to noise ratio (S/N).  The data are typically dependent
+values (e.g. flux as a function of energy or counts as a function of
+radius).  The data should be sorted by the independent variable
+(e.g. energy or radius).
 
-Binning begins at the start of the data vector.  Bins are
-grown until the minimum signal to noise ratio (specified by
-B<$min_sn>) is met, where the signal is the sum of the data and the
-noise is the standard deviation of the data in the bin.  If the final
-bin has insufficient signal to noise, it is folded into the previous
-bin.  In order to avoid singularities in the signal to noise, bins
-must have a minimum of two elements; the exact number may be specified
-by the optional B<$min_nelem> parameter.
+Binning begins at the start of the data vector.  Bins are grown until
+the minimum S/N (specified by B<$min_sn>) is met, where the signal is
+the sum of the data and the noise is the standard deviation of the
+data in the bin.  If the final bin has insufficient S/N, it is folded
+into the previous bin.  The minimum and maximum number of elements in
+a bin may be specified via the option hash.  In order to avoid
+singularities in S/N, bins must have a minimum of two elements
 
 B<bin_sdev> returns a hash with the following entries:
 
@@ -180,7 +188,7 @@ The sum of the data values in each bin.
 
 The number of data elements in each bin.
 
-=item C<sdev>
+=item C<sigma>
 
 The standard deviation of the data in each bin.
 
@@ -193,6 +201,23 @@ The index into the input data piddle of the first data value in a bin.
 The index into the input data piddle of the last data value in a bin.
 
 =back
+
+=head3 Options
+
+Options are parsed by PDL::Options, so unique abbreviations are accepted.
+
+=over
+
+=item nmin (default: 2 )
+
+The minimum number of elements per bin. Must be greater than one.
+
+=item nmax (default: 0 )
+
+The maximum number of elements per bin; set to zero for no limit.
+
+=back
+
 
 =cut
 

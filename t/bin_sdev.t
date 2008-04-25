@@ -23,7 +23,7 @@ sub test_it {
 
     my $testid = "sn: $in{min_sn}; nelem: $in{min_nelem}";
 
-    my %out = $in{data}->bin_sdev( $in{min_sn}, $in{min_nelem} );
+    my %out = $in{data}->bin_sdev( $in{min_sn}, { nmin => $in{min_nelem} } );
 
     my $nbins = $out{sum}->nelem;
 
@@ -33,7 +33,8 @@ sub test_it {
     my @sum;
     for my $bin ( 0..$nbins-1 )
     {
-        my ( $ifirst, $ilast ) = ( $out{ifirst}->at($bin), $out{ilast}->at($bin) );
+        my ( $ifirst, $ilast ) = ( $out{ifirst}->at($bin),
+                                   $out{ilast}->at($bin) );
 
         my $slice = $in{data}->mslice([$ifirst,$ilast]);
 
@@ -46,7 +47,7 @@ sub test_it {
     }
 
 
-    ok( all( approx $out{sdev}, pdl(@sdev), 1e-8 ), "$testid: sdev" );
+    ok( all( approx $out{sigma}, pdl(@sdev), 1e-8 ), "$testid: sigma" );
     ok( all( approx $out{sum}, pdl(@sum), 1e-8 ), "$testid: sum" );
 
 
@@ -55,7 +56,7 @@ sub test_it {
          "$testid: check nelem" );
 
     # check if signal to noise ratio is greater than requested min
-    ok ( all( $out{sum} / $out{sdev} >= $in{min_sn} ),
+    ok ( all( $out{sum} / $out{sigma} >= $in{min_sn} ),
          "$testid: check S/N" );
 
 
