@@ -3,7 +3,7 @@ double sum2 = 0;        /* sum of signal**2 in current bin */
 double sum = 0;         /* sum of signal in current bin */
 int nin = 0;            /* number of elements in the 
 			     current bin */
-double sdev2;           /* square of instantaneous
+double sdev2 = 0;           /* square of instantaneous
 			     standard deviation */
 loop(n) %{
     double sumsq;
