@@ -1,3 +1,5 @@
+#!perl
+
 # --8<--8<--8<--8<--
 #
 # Copyright (C) 2008 Smithsonian Astrophysical Observatory
@@ -22,9 +24,14 @@
 use strict;
 use warnings;
 
+use IO::File;
+use File::Spec::Functions qw( catdir catfile );
+
+use constant LIBPATH => catdir( qw[ lib CXC PDL ] );
+
 # actual code is broken out into separate files for
 # easier maintenance
-use lib 'lib/CXC/PDL';
+use lib LIBPATH;
 
 our $VERSION = '0.05';
 
@@ -103,4 +110,27 @@ require 'bin_sdev.pd';
 require 'bin_err.pd';
 
 pp_done();
+
+
+
+sub read_code {
+    my ( $routine ) = @_;
+
+    my $file = catfile( LIBPATH, $routine );
+
+    my $fh = IO::File->new( $file, 'r' )
+      or die( "unable to open source file: $file\n" );
+
+    return join('', $fh->getlines);
+}
+
+sub filter_code {
+
+    my ( $handle_bad ) = shift;
+
+    return join('',
+                "#define HANDLE_BAD_VALUE $handle_bad\n",
+                $_[0],
+                "#undef HANDLE_BAD_VALUE\n" );
+}
 

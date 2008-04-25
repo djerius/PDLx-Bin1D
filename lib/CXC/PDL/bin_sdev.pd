@@ -1,114 +1,29 @@
-pp_def('bin_sdev',
-       Pars => join( ';',
-                     'signal(n)',
-                     'int [o] bin(n)',
-                     'int [o] nbins()',
-                     'double [o] sum(n)',
-                     'int [o] nelem(n)',
-                     'double [o] sigma(n)',
-		     'int [o] ifirst(n)',
-		     'int [o] ilast(n)',
-		     'double [t] sum2(n)',
-		      ),
-       OtherPars => join(';',
-		         'double min_sn',
-			 'long nmin',
-			 'long nmax',
-			  ),
-       Code => q{
-                int curind = 0;         /* index of current bin */
-                double sum2 = 0;        /* sum of signal**2 in current bin */
-                double sum = 0;         /* sum of signal in current bin */
-                int nin = 0;            /* number of elements in the 
-					   current bin */
-                double sdev2;           /* square of instantaneous
-					   standard deviation */
-                loop(n) %{
-                    double sumsq;
-		    double signal = $signal();
-		    double signal2 = signal * signal;
-                    sum  += signal;
-                    sum2 += signal2;
-                    nin++;
-                    $bin() = curind;
+#!perl
 
-		    /* rearranged to avoid possible sum * sum overflow */
-                    sdev2 = sum2 / nin - ( sum / nin ) * ( sum / nin );
+{
+ my $code = read_code( 'bin_sdev.c' );
 
-		    if ( nin == 1 )
-		      $ifirst( n => curind ) = n;
-
-
-                    if (        nin == $COMP(nmax)
-                         || (   nin >= $COMP(nmin)
-			     && sum / sqrt(sdev2) >= $COMP(min_sn)  )
-		       )
-                    {
-                        $sum( n => curind ) = sum;
-                        $sigma( n => curind ) = sqrt(sdev2);
-			$nelem( n => curind ) = nin;
-      			$ilast( n => curind ) = n;
-			$sum2( n => curind) = sum2;
-                        sum2 = sum = nin = 0;
-                        curind++;
-                    }
-                   %}
-		    /* record last bin if it's not empty */
-                    if ( nin )
-                    {
-#if 0
-		      int ii;
-		      for ( ii = 0 ; ii < curind ; ii++ )
-			   fprintf ( stderr, "%d: %d %g %g %g\n",
-			   ii, $nelem( n => ii ),
-			   $sum( n => ii ),
-			   $sigma( n => ii ),
-			   $sum( n => ii ) / $sigma( n => ii ) );
-#endif
-
-		        /* a non empty bin means that its S/N is too low.
-			   fold it into the previous bin if possible.
-			   sometimes that will actually lower the S/N
-			   of the previous bin; keep going until we
-			   can't fold anymore or we get the proper S/N
-			    */
-			while ( curind > 0  )
-			{
-			   int ni;
-			   curind -=1;
-
-			   for (ni = $SIZE(n) - nin ; ni < $SIZE(n) ; ni++ )
-			     $bin( n => ni ) = curind;
-
-			   sum2 += $sum2( n => curind );
-			   sum  += $sum( n => curind );
-			   nin  += $nelem( n => curind );
-			   sdev2 = sum2 / nin - ( sum / nin ) * ( sum / nin );
-
-			   if ( sum / sqrt(sdev2) >= $COMP(min_sn) )
-			     break;
-			}	
-
-			$sum( n => curind ) = sum;
-			$sigma( n => curind ) = sqrt(sdev2);
-			$nelem( n => curind ) = nin;
-			$ilast( n => curind ) = $SIZE(n)-1;
-
-#if 0
-			ii = curind;
-			fprintf( stderr, "final: \n" );
-			   fprintf ( stderr, "%d: %d %g %g %g\n",
-			   ii, $nelem( n => ii ),
-			   $sum( n => ii ),
-			   $sigma( n => ii ),
-			   $sum( n => ii ) / $sigma( n => ii ) );
-#endif
-
-                    }
-                /* adjust for possibility of last bin being empty */
-                $nbins() = curind + ( nin != 0 );
-                   },
-       PMCode => q{
+ pp_def('bin_sdev',
+        Pars => join( ';',
+                      'signal(n)',
+                      'int [o] bin(n)',
+                      'int [o] nbins()',
+                      'double [o] sum(n)',
+                      'int [o] nelem(n)',
+                      'double [o] sigma(n)',
+                      'int [o] ifirst(n)',
+                      'int [o] ilast(n)',
+                      'double [t] sum2(n)',
+                    ),
+        OtherPars => join(';',
+                          'double min_sn',
+                          'long nmin',
+                          'long nmax',
+                         ),
+        Code => filter_code( 0, $code),
+        HandleBad => 1,
+        BadCode => filter_code( 1, $code),
+        PMCode => q{
         ## no critic ProhibitAccessOfPrivateData
         sub PDL::bin_sdev {
 	    my $opts = 'HASH' eq ref $_[-1] ? pop : {};
@@ -143,8 +58,10 @@ pp_def('bin_sdev',
 		   );
         }
       },
-      Doc => undef
-   );
+        Doc => undef
+       );
+
+}
 
 pp_addpm( { At => 'Top'}, q{
 
@@ -157,6 +74,8 @@ pp_addpm( { At => 'Top'}, q{
 =for ref
 
 Adaptively bin a data set using the standard deviation.
+
+This routine ignores bad-valued data.
 
 B<bin_sdev> groups data into bins whose widths are chosen to achieve a
 minimum signal to noise ratio (S/N).  The data are typically dependent
@@ -178,7 +97,8 @@ B<bin_sdev> returns a hash with the following entries:
 
 =item C<bin>
 
-The bin indices for the elements in the input data piddle.
+The bin indices for the elements in the input data piddle.  Data which
+were skipped because of bad values will have their index set to the bad value.
 
 =item C<sum>
 
