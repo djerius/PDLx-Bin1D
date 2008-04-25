@@ -1,5 +1,9 @@
 Revision history for CXC-PDL-Bin1D
 
+0.5   Fri Apr 25 13:14:58 EDT 2008
+       - new bin_err routine
+       - refactored bin_sdev interface; not backwards compatible
+
 0.4   Wed Apr 23 15:59:10 EDT 2008
        - bin_sdev folding of last bin sometimes led to S/N falling below
          the threshold.

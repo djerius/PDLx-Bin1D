@@ -1,4 +1,33 @@
-2008-04-23 15:57 -0400  djerius  <djerius@cfa.harvard.edu>  (2947e69568d9 [tip])
+2008-04-25 13:27 -0400  djerius  <djerius@cfa.harvard.edu>  (879e4fba4a2d [tip])
+
+	* lib/CXC/PDL/bin_err.pd:
+	missing variable initialization
+
+2008-04-25 13:14 -0400  djerius  <djerius@cfa.harvard.edu>  (05836e2f4325)
+
+	* lib/CXC/PDL/bin_err.pd, t/bin_err.t: new file.
+	* lib/CXC/PDL/Bin1D.pd, lib/CXC/PDL/bin_err.pd, t/bin_err.t:
+	added adaptive binning using external errors
+
+2008-04-25 13:13 -0400  djerius  <djerius@cfa.harvard.edu>  (5d09daacaa01)
+
+	* lib/CXC/PDL/bin_sdev.pd, t/bin_sdev.t:
+	refactored inteface; new nmax option
+
+	* use PDL::Options and option hash to standardize interface.
+	* add nmax option
+
+2008-04-23 16:01 -0400  djerius  <djerius@cfa.harvard.edu>  (7f16c86fe199)
+
+	* .hgtags:
+	Added tag 0.04 for changeset a594cd9ea8dd
+
+2008-04-23 16:00 -0400  djerius  <djerius@cfa.harvard.edu>  (a594cd9ea8dd [0.04])
+
+	* ChangeLog, Changes, lib/CXC/PDL/Bin1D.pd:
+	update for release
+
+2008-04-23 15:57 -0400  djerius  <djerius@cfa.harvard.edu>  (2947e69568d9)
 
 	* lib/CXC/PDL/bin_sdev.pd:
 	folding of last bin can result in lowered S/N in bin.
