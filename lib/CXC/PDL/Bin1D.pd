@@ -32,6 +32,8 @@ pp_addpm({At => 'Top'}, <<"EOD" );
 use strict;
 use warnings;
 BEGIN{ our \$VERSION = '$VERSION' };
+
+use PDL::Options;
 EOD
 
 pp_addpm( { At => 'Top'}, q{
@@ -98,6 +100,7 @@ may find a copy at
 });
 
 require 'bin_sdev.pd';
+require 'bin_err.pd';
 
 pp_done();
 
