@@ -1,4 +1,29 @@
-2008-04-25 13:27 -0400  djerius  <djerius@cfa.harvard.edu>  (879e4fba4a2d [tip])
+2008-04-25 17:25 -0400  djerius  <djerius@cfa.harvard.edu>  (a0ce12109927 [tip])
+
+	* lib/CXC/PDL/bin_sdev.c:
+	quiet incorrect compile warning about uninitialized variable use
+
+2008-04-25 17:17 -0400  djerius  <djerius@cfa.harvard.edu>  (6ae3da323a17)
+
+	* lib/CXC/PDL/bin_err.c, lib/CXC/PDL/bin_sdev.c: new file.
+	* lib/CXC/PDL/Bin1D.pd, lib/CXC/PDL/bin_err.c, lib/CXC/PDL/bin_err.pd,
+	lib/CXC/PDL/bin_sdev.c, lib/CXC/PDL/bin_sdev.pd:
+	bin_err and bin_sdev now handle bad values by ignoring them.
+
+	C code was split out into separate files to make it easier to add
+	bad value support.
+
+2008-04-25 13:28 -0400  djerius  <djerius@cfa.harvard.edu>  (4ec4f831cbb9)
+
+	* .hgtags:
+	Added tag 0.05 for changeset a110acf1088f
+
+2008-04-25 13:28 -0400  djerius  <djerius@cfa.harvard.edu>  (a110acf1088f [0.05])
+
+	* ChangeLog, Changes, lib/CXC/PDL/Bin1D.pd:
+	update for release
+
+2008-04-25 13:27 -0400  djerius  <djerius@cfa.harvard.edu>  (879e4fba4a2d)
 
 	* lib/CXC/PDL/bin_err.pd:
 	missing variable initialization

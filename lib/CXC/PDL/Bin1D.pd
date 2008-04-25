@@ -33,7 +33,7 @@ use constant LIBPATH => catdir( qw[ lib CXC PDL ] );
 # easier maintenance
 use lib LIBPATH;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 pp_addpm({At => 'Top'}, <<"EOD" );
 use strict;
@@ -133,4 +133,3 @@ sub filter_code {
                 $_[0],
                 "#undef HANDLE_BAD_VALUE\n" );
 }
-

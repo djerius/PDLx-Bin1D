@@ -1,5 +1,8 @@
 Revision history for CXC-PDL-Bin1D
 
+0.6   Fri Apr 25 17:17:22 EDT 2008
+       - bin_err & bin_sdev now handle bad values
+
 0.5   Fri Apr 25 13:14:58 EDT 2008
        - new bin_err routine
        - refactored bin_sdev interface; not backwards compatible
