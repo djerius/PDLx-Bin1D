@@ -23,7 +23,7 @@ pp_def('bin_err',
                 double sum = 0;         /* sum of signal in current bin */
                 int nin = 0;            /* number of elements in the 
 					   current bin */
-                double sum_err2;        /* sum of error^2 in current bin */
+                double sum_err2 = 0;    /* sum of error^2 in current bin */
 
                 loop(n) %{
                     double err2 = $err();
