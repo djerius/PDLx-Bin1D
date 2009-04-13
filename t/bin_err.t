@@ -53,7 +53,7 @@ sub test_it {
 
 
     # make sure that the minimum number of elements is in each bin
-    ok ( all( $out{nelem} >= $in{min_nelem} ),
+    ok ( all( $out{nelem} >= $in{nmin} ),
          "$testid: check nelem" );
 
     # check if signal to noise ratio is greater than requested min
