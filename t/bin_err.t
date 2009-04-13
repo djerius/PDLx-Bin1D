@@ -54,11 +54,11 @@ sub test_it {
 
     # make sure that the minimum number of elements is in each bin
     ok ( all( $out{nelem} >= $in{nmin} ),
-         "$testid: check nelem" );
+         "$testid: minimum nelem" );
 
     # check if signal to noise ratio is greater than requested min
     ok ( all( $out{sum} / $out{sigma} >= $in{min_sn} ),
-         "$testid: check S/N" );
+         "$testid: minimum returned S/N" );
 
 
     # make sure that the minimum possible S/N was actually returned
@@ -79,5 +79,5 @@ sub test_it {
         push @sn, $sum / $err;
     }
 
-    ok ( all( pdl(@sn) < $in{min_sn} ), "$testid: check S/N min" );
+    ok ( all( pdl(@sn) < $in{min_sn} ), "$testid: minimum actual S/N" );
 }
