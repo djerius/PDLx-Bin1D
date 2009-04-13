@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use PDL;
-use Test::More tests => 7;
+use Test::More tests => 9;
 
 BEGIN {
   use_ok('CXC::PDL::Bin1D');
@@ -20,6 +20,8 @@ test_it( min_sn => 20,
 	 nmax => 0,
          data  => $data,
          err   => $err,
+	 wmin => 0,
+	 wmax => 0
        );
 
 sub test_it {
@@ -85,4 +87,8 @@ sub test_it {
     }
 
     ok ( all( pdl(@sn) < $in{min_sn} ), "$testid: minimum actual S/N" );
+
+    # make sure that the bin widths are correctly limited
+    ok ( all( $out{width} >= $in{wmin} ), "$testid: minimum bin width" );
+    ok ( $in{wmax} ? all( $out{width} >= $in{wmin} ) : 1, "$testid: maximum bin width" );
 }
