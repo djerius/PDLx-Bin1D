@@ -1,10 +1,15 @@
 
+#define BIN_FOLDED 8
+#define BIN_GTNMAX 4
+#define BIN_GTWMAX 2
+#define BIN_OK 1
 
 int curind = 0;         /* index of current bin */
 double sum = 0;         /* sum of signal in current bin */
 double width = 0;	/* width of current bin (if applicable) */
 int nin = 0;            /* number of elements in the current bin */
 double sum_err2 = 0;    /* sum of error^2 in current bin */
+int done = 0;		/* status of the current bin */
 
 /* only worry about bin widths if the caller has requested a limit. if
    caller hasn't, there's no guarantee that the bwidth piddle is valid */
@@ -44,19 +49,23 @@ loop(n) %{
     if ( nin == 1 )
 	$ifirst( n => curind ) = n;
 
-    if ( 
-	/* maximum number of elements achieved */
-	   nin >= $COMP(nmax)
+    /* figure out if this bin is done, and why */
+    done =
+	( (nin   >= $COMP(nmax) )
+	  ? BIN_GTNMAX : 0 )
+	|
+	( (width >= $COMP(wmax) )
+	  ? BIN_GTWMAX : 0 )
+	|
+        ( ((   nin   >= $COMP(nmin)
+	    && width >= $COMP(wmin)
+	    && sum / sqrt(sum_err2) >= $COMP(min_sn)  ))
+	  ? BIN_OK : 0 )
+	;
 
-	/* maximum bin width achieved */
-  	|| width >= $COMP(wmax)
-
-	/* minimum number of elements, minimum bin width, and minimum S/N achieved */
-        || (   nin   >= $COMP(nmin) 
-	    && width >= $COMP(wmin) 
-	    && sum / sqrt(sum_err2) >= $COMP(min_sn)  )
-	 )
+    if ( done )
     {
+	$rc( n => curind ) = done;
 	$sum( n => curind ) = sum;
 	$width( n => curind ) = width;
 	$sigma( n => curind ) = sqrt(sum_err2);
@@ -101,6 +110,23 @@ if ( nin )
 	     break;
      }	
 
+    done = 
+	BIN_FOLDED
+	| 
+	( (nin   >= $COMP(nmax) )
+	  ? BIN_GTNMAX : 0 )
+	|
+	( (width >= $COMP(wmax) )
+	  ? BIN_GTWMAX : 0 )
+	|
+        ( ((   nin   >= $COMP(nmin)
+	    && width >= $COMP(wmin)
+	    && sum / sqrt(sum_err2) >= $COMP(min_sn)  ))
+	  ? BIN_OK : 0 )
+	;
+
+
+     $rc( n => curind ) = done;
      $sum( n => curind ) = sum;
      $width( n => curind ) = width;
      $sigma( n => curind ) = sqrt(sum_err2);

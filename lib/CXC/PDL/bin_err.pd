@@ -16,6 +16,7 @@
                       'double [o] sigma(n)',
                       'int [o] ifirst(n)',
                       'int [o] ilast(n)',
+                      'int [o] rc(n)',
                       'double [t] sum2(n)',
                     ),
         OtherPars => join(';',
