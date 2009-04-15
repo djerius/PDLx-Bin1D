@@ -29,7 +29,9 @@ sub PDL::bin_err {
       if   defined $opt{bwidth}
 	&& join(';', $opt{bwidth}->dims) ne join(';', $vec->dims);
 
-    PDL::_bin_err_int( $vec, $err, $opt{bwidth} ||= null(),
+    $opt{bwidth} = null() unless defined $opt{bwidth};
+
+    PDL::_bin_err_int( $vec, $err, $opt{bwidth},
 		       (my $bin   = null()),
 		       (my $nbins = null()),
 		       (my $sum   = null()),
