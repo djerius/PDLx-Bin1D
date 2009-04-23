@@ -99,12 +99,16 @@ sub test_it {
     # if the maximum number of elements is reached, or the maximum bin
     # width is reached, it's possible that the minimum S/N has not
     # been reached.  exclude those bins which might legally violate
-    # the min S/N requirement.
+    # the min S/N requirement.  It's also possible that requesting a
+    # minimum width or number of elements has caused the S/N to be
+    # higher than if those limits were not specified; exclude those as
+    # well.
 
     my %mskd;
     my @mskd = qw( rc sum sigma nelem width ifirst ilast );
 
-    ( $c_sn, $c_snl, @mskd{@mskd}) = where( $c_sn, $c_snl, @out{@mskd}, $out{rc} == 1 );
+    ( $c_sn, $c_snl, @mskd{@mskd}) = where( $c_sn, $c_snl, @out{@mskd}, 
+					    $out{rc} == CXC::PDL::Bin1D::BIN_OK );
 
     # make sure that the minimum possible S/N was actually returned
     # recall that $msn is calculated using one fewer input bins, so that
