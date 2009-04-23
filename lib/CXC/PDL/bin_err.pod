@@ -11,50 +11,22 @@ Adaptively bin a data set using errors.
 This routine ignores data with bad values or with errors that have
 bad values.
 
-B<bin_err> groups data into bins whose widths are chosen to achieve a
-minimum signal to noise ratio (S/N).  The data are typically dependent
-values (e.g. flux as a function of energy or counts as a function of
-radius).  The data should be sorted by the independent variable
-(e.g. energy or radius).
+B<bin_err> groups data into bins such that each bin achieves a minimum
+signal to noise ratio (S/N).  The data are typically dependent values
+(e.g. flux as a function of energy or counts as a function of radius).
+The data should be sorted by the independent variable (e.g. energy or
+radius).
 
-Binning begins at the start of the data vector.  Bins are grown until
-the minimum S/N (specified by B<$min_sn>) is met, where the signal is
-the sum of the data and the noise is the RSS error in the bin.  If the
-final bin has insufficient S/N, it is folded into the previous bin.
-The minimum and maximum number of elements in a bin may be specified
-via the option hash.
+Binning begins at the start of the data vector.  Data are accumulated
+into a bin until the minimum S/N (specified by B<$min_sn>) is met.
+The signal is the sum of the data and the noise is the RSS error in
+the bin.  If the final bin has insufficient S/N, it is folded into the
+previous bin.
 
-B<bin_err> returns a hash with the following entries:
-
-=over
-
-=item C<bin>
-
-The bin indices for the elements in the input data piddle.  Data which
-were skipped because of bad values will have their index set to the bad value.
-
-=item C<sum>
-
-The sum of the data values in each bin.
-
-=item C<nelem>
-
-The number of data elements in each bin.
-
-=item C<sigma>
-
-The RSS of the errors in each bin.
-
-=item C<ifirst>
-
-The index into the input data piddle of the first data value in a bin.
-
-=item C<ilast>
-
-The index into the input data piddle of the last data value in a bin.
-
-=back
-
+Additional constraints may be placed upon how the data are binned.
+The caller may bound the number of input data elements assigned to a
+bin.  Each datum may be assigned a "width" and the sum of those
+widths may be used to bound the association of data to a bin.
 
 =head3 Options
 
@@ -69,6 +41,92 @@ The minimum number of elements per bin
 =item nmax (default: 0 )
 
 The maximum number of elements per bin; set to zero for no limit.
+
+=item wmin (default: 0 )
+
+=item wmax (default: 0 )
+
+The minimum and maximum width for a bin; set to zero for no limit.
+These options require that the C<width> option also be set.
+
+=item width
+
+A piddle containting the "width" of each datum.  It must have the same
+dimensions as the input data.
+
+=back
+
+=head3 Results
+
+B<bin_err> returns a hash with the following entries:
+
+=over
+
+=item C<bin>
+
+A piddle containing the bin indices for the elements in the input
+data piddle.  Data which were skipped because of bad values will have
+their index set to the bad value.
+
+=item C<sum>
+
+A piddle containing the sum of the data values in each bin.
+
+=item C<nelem>
+
+A piddle containing the number of data elements in each bin.
+
+=item C<sigma>
+
+A piddle containing the RSS of the errors in each bin.
+
+=item C<width>
+
+A piddle containing the width of each bin.  It will be empty
+if no input width constraints were specified.
+
+=item C<ifirst>
+
+A piddle containing the index into the input data piddle of the first
+data value in a bin.
+
+=item C<ilast>
+
+A piddle containing the index into the input data piddle of the last
+data value in a bin.
+
+=item C<rc>
+
+A piddle containing a results code for each output bin.  The code is
+the bitwise "or" of the following constants (available in the
+C<CXC::PDL::Bin1D> namespace)
+
+=over
+
+=item BIN_OK
+
+The bin met the minimum S/N, data element count and width requirements
+
+=item BIN_GEWMAX
+
+The bin width was greater or equal to that requested.
+
+=item BIN_GENMAX
+
+The number of data elements was greater or equal to that requested.
+
+=item BIN_FOLDED
+
+The bin is the result of folding bins at the end of the bin vector to
+achieve a minimum S/N.
+
+=item BIN_GTMINSN
+
+The bin accumulated more data elemetns than was necessary to meet the
+S/N requirements.  This results from constraints on the minimum number
+of data elements or bin width.
+
+=back
 
 =back
 
