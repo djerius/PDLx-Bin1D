@@ -16,23 +16,23 @@ sub PDL::bin_err {
 			nmax => 0,
 			wmin => 0,
 			wmax => 0,
-			bwidth => undef,
+			width => undef,
 		      },
 		      $opts );
 
     barf( "minimum number of elements must be at least 1\n" )
       if $opt{nmin} < 1;
 
-    barf( "bwidth has must be specified if either of wmin or wmax is non-zero\n" )
-      if ($opt{wmin} || $opt{wmax}) && ! defined $opt{bwidth};
+    barf( "width has must be specified if either of wmin or wmax is non-zero\n" )
+      if ($opt{wmin} || $opt{wmax}) && ! defined $opt{width};
 
-    barf( "bwidth has wrong dims\n" )
-      if   defined $opt{bwidth}
-	&& join(';', $opt{bwidth}->dims) ne join(';', $vec->dims);
+    barf( "width has wrong dims\n" )
+      if   defined $opt{width}
+	&& join(';', $opt{width}->dims) ne join(';', $vec->dims);
 
-    $opt{bwidth} = null() unless defined $opt{bwidth};
+    $opt{width} = null() unless defined $opt{width};
 
-    PDL::_bin_err_int( $vec, $err, $opt{bwidth},
+    PDL::_bin_err_int( $vec, $err, $opt{width},
 		       (my $bin   = null()),
 		       (my $nbins = null()),
 		       (my $sum   = null()),

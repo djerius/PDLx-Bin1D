@@ -56,7 +56,7 @@ my $err  = sqrt($data);
 }
 
 {
-    my $bwidth = random(1000) * 10;
+    my $width = random(1000) * 10;
 
     my %in = (	 min_sn => 20,
 		 nmin => 1,
@@ -65,7 +65,7 @@ my $err  = sqrt($data);
 		 err   => $err,
 		 wmin => 1,
 		 wmax => 0,
-		 bwidth => $bwidth
+		 width => $width
 	    );
 
 
