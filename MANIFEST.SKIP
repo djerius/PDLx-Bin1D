@@ -10,4 +10,4 @@ t/.*.stderr
 blibdirs
 .gz$
 .bs$
-^Hist1D.*
+^Bin1D.*
