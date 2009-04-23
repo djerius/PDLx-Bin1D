@@ -13,7 +13,7 @@ int done = 0;		/* status of the current bin */
 
 /* only worry about bin widths if the caller has requested a limit. if
    caller hasn't, there's no guarantee that the bwidth piddle is valid */
-int handle_width = $COMP(wmin) > 0 && $COMP(wmax) > 0;
+int handle_width = $COMP(wmin) > 0 || $COMP(wmax) > 0;
 
 /* simplify the logic below by setting max values to the largest possible value
    if the user hasn't specified one */
