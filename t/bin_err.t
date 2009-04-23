@@ -118,7 +118,7 @@ sub test_it {
 
     # make sure that the bin widths are correctly limited
     ok ( all( $mskd{width} >= $in{wmin} ), "$testid: minimum bin width" );
-    ok ( $in{wmax} ? all( $mskd{width} >= $in{wmin} ) : 1, "$testid: maximum bin width" );
+    ok ( $in{wmax} ? all( $mskd{width} <= $in{wmax} ) : 1, "$testid: maximum bin width" );
 
     # check if signal to noise ratio is greater than requested min
     ok ( all( $mskd{sum} / $mskd{sigma} >= $min_sn ),
