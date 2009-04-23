@@ -1,9 +1,10 @@
 ## no critic ProhibitAccessOfPrivateData
 
-use constant BIN_FOLDED => 8;
-use constant BIN_GTNMAX => 4;
-use constant BIN_GTWMAX => 2;
-use constant BIN_OK => 1;
+use constant BIN_GTMINSN=> 16;
+use constant BIN_FOLDED =>  8;
+use constant BIN_GENMAX =>  4;
+use constant BIN_GEWMAX =>  2;
+use constant BIN_OK     =>  1;
 
 sub PDL::bin_err {
     my $opts = 'HASH' eq ref $_[-1] ? pop : {};
