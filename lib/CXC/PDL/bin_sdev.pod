@@ -1,0 +1,75 @@
+=head2 bin_sdev
+
+=for usage
+
+  %hash = bin_sdev( $data, $min_sn, [ \%options ] );
+
+=for ref
+
+Adaptively bin a data set using the standard deviation.
+
+This routine ignores bad-valued data.
+
+B<bin_sdev> groups data into bins whose widths are chosen to achieve a
+minimum signal to noise ratio (S/N).  The data are typically dependent
+values (e.g. flux as a function of energy or counts as a function of
+radius).  The data should be sorted by the independent variable
+(e.g. energy or radius).
+
+Binning begins at the start of the data vector.  Bins are grown until
+the minimum S/N (specified by B<$min_sn>) is met, where the signal is
+the sum of the data and the noise is the standard deviation of the
+data in the bin.  If the final bin has insufficient S/N, it is folded
+into the previous bin.  The minimum and maximum number of elements in
+a bin may be specified via the option hash.  In order to avoid
+singularities in S/N, bins must have a minimum of two elements
+
+B<bin_sdev> returns a hash with the following entries:
+
+=over
+
+=item C<bin>
+
+The bin indices for the elements in the input data piddle.  Data which
+were skipped because of bad values will have their index set to the bad value.
+
+=item C<sum>
+
+The sum of the data values in each bin.
+
+=item C<nelem>
+
+The number of data elements in each bin.
+
+=item C<sigma>
+
+The standard deviation of the data in each bin.
+
+=item C<ifirst>
+
+The index into the input data piddle of the first data value in a bin.
+
+=item C<ilast>
+
+The index into the input data piddle of the last data value in a bin.
+
+=back
+
+=head3 Options
+
+Options are parsed by PDL::Options, so unique abbreviations are accepted.
+
+=over
+
+=item nmin (default: 2 )
+
+The minimum number of elements per bin. Must be greater than one.
+
+=item nmax (default: 0 )
+
+The maximum number of elements per bin; set to zero for no limit.
+
+=back
+
+
+=cut
