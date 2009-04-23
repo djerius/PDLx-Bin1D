@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use PDL;
-use Test::More tests => 28;
+use Test::More tests => 37;
 
 BEGIN {
   use_ok('CXC::PDL::Bin1D');
@@ -54,6 +54,24 @@ my $err  = sqrt($data);
 
     test_it( "sn: $in{min_sn}; nmin: $in{nmin}; nmax: $in{nmax}", %in );
 }
+
+{
+    my $bwidth = random(1000) * 10;
+
+    my %in = (	 min_sn => 20,
+		 nmin => 1,
+		 nmax => 0,
+		 data  => $data,
+		 err   => $err,
+		 wmin => 1,
+		 wmax => 0,
+		 bwidth => $bwidth
+	    );
+
+
+    test_it( "sn: $in{min_sn}; nmin: $in{nmin}; nmax: $in{nmax}", %in );
+}
+
 
 
 
