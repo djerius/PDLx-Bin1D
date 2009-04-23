@@ -1,17 +1,21 @@
 Revision history for CXC-PDL-Bin1D
 
-0.6   Fri Apr 25 17:17:22 EDT 2008
+0.10   Thu Apr 23 16:29:49 EDT 2009
+       - bin_err can now use width constraints
+       - bin_err returns per-bin status code
+
+0.06   Fri Apr 25 17:17:22 EDT 2008
        - bin_err & bin_sdev now handle bad values
 
-0.5   Fri Apr 25 13:14:58 EDT 2008
+0.05   Fri Apr 25 13:14:58 EDT 2008
        - new bin_err routine
        - refactored bin_sdev interface; not backwards compatible
 
-0.4   Wed Apr 23 15:59:10 EDT 2008
+0.04   Wed Apr 23 15:59:10 EDT 2008
        - bin_sdev folding of last bin sometimes led to S/N falling below
          the threshold.
 
-0.3   Wed Apr 23 14:45:40 EDT 2008
+0.03   Wed Apr 23 14:45:40 EDT 2008
        - massive bug fixes. last version was quite broken
        - changed name from hist* to bin* as it's really a binning thing.
 

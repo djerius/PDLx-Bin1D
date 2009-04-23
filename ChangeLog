@@ -1,4 +1,131 @@
-2008-04-25 17:25 -0400  djerius  <djerius@cfa.harvard.edu>  (a0ce12109927 [tip])
+2009-04-23  Diab Jerius  <dj@macabre.cfa.harvard.edu>
+
+	Tag 0.10
+
+2009-04-23 15:51 -0400  djerius  <djerius@cfa.harvard.edu>  (8811593bb8ce [tip])
+
+	* lib/CXC/PDL/bin_sdev.pl, lib/CXC/PDL/bin_sdev.pod: new file.
+	* lib/CXC/PDL/bin_sdev.pd, lib/CXC/PDL/bin_sdev.pl,
+	lib/CXC/PDL/bin_sdev.pod:
+	move docs and Perl code for bin_sdev into separate files, just like
+	for bin_err
+
+2009-04-23 14:47 -0400  djerius  <djerius@cfa.harvard.edu>  (faa2bec8f1c9)
+
+	* MANIFEST.SKIP:
+	missed rename from much earlier Hist->Bin rename
+
+2009-04-23 14:38 -0400  djerius  <djerius@cfa.harvard.edu>  (2d419fdc8e3f)
+
+	* lib/CXC/PDL/bin_err.pod:
+	update documentation to reflect new capabilities
+
+2009-04-23 14:07 -0400  djerius  <djerius@cfa.harvard.edu>  (660b2ce1774c)
+
+	* lib/CXC/PDL/bin_err.pl, t/bin_err.t:
+	rename bwidth to width to not confuse user
+
+2009-04-23 13:20 -0400  djerius  <djerius@cfa.harvard.edu>  (a2ca45599f90)
+
+	* t/bin_err.t:
+	add data with bin widths to tests
+
+2009-04-23 13:19 -0400  djerius  <djerius@cfa.harvard.edu>  (602b84574253)
+
+	* t/bin_err.t:
+	use status code enum instead of value; update some internal docs
+
+2009-04-23 13:18 -0400  djerius  <djerius@cfa.harvard.edu>  (2bf12f3fb05a)
+
+	* t/bin_err.t:
+	widen testing of minimum number of elements and bin widths to
+	include all bins
+
+2009-04-23 12:09 -0400  djerius  <djerius@cfa.harvard.edu>  (ec58ce8183ab)
+
+	* t/bin_err.t:
+	test against maximum bin width was incorrect
+
+2009-04-23 12:05 -0400  djerius  <djerius@cfa.harvard.edu>  (523bee22f710)
+
+	* lib/CXC/PDL/bin_err.c, lib/CXC/PDL/bin_err.pl:
+	add status code to indicate the resultant S/N is not the minimum
+	possible (due to other constraints)
+
+	It's possible that more bins than are necessary to achieve the
+	minimum s/n are used if other minimum constraints are present.
+
+	Other status codes were renamed to be more consistent with their
+	meanings.
+
+2009-04-23 11:58 -0400  djerius  <djerius@cfa.harvard.edu>  (eef7da265f7a)
+
+	* lib/CXC/PDL/bin_err.c:
+	incorrect logic to determine when bin widths are being handled
+
+2009-04-15 19:47 -0400  djerius  <djerius@cfa.harvard.edu>  (2306d47277d1)
+
+	* lib/CXC/PDL/bin_err.pl:
+	incorrect test for bwidth not having been specified
+
+2009-04-15 19:40 -0400  djerius  <djerius@cfa.harvard.edu>  (85c6fe388144)
+
+	* lib/CXC/PDL/bin_err.c, lib/CXC/PDL/bin_err.pd,
+	lib/CXC/PDL/bin_err.pl, t/bin_err.t:
+	return a status code for each bin. update tests to use & test it.
+
+	hardwire a starting seed for the random number generator to force
+	the last bin to be folded.
+
+2009-04-13 15:54 -0400  djerius  <djerius@cfa.harvard.edu>  (5e0d29062a1f)
+
+	* t/bin_err.t:
+	test bin width limits
+
+2009-04-23 15:13 -0400  djerius  <djerius@cfa.harvard.edu>  (159fb4285fe8)
+
+	* lib/CXC/PDL/bin_err.c, lib/CXC/PDL/bin_err.pd,
+	lib/CXC/PDL/bin_err.pl, t/bin_err.t:
+	test for exceeding maximum number of elements
+
+2009-04-23 15:13 -0400  djerius  <djerius@cfa.harvard.edu>  (bdba894eb6a8)
+
+	* Makefile.PL:
+	make build of Bin1D.pm depend upon all of its included files
+
+2009-04-13 15:49 -0400  djerius  <djerius@cfa.harvard.edu>  (3a6d114ba991)
+
+	* t/bin_err.t:
+	relabel tests for clarity
+
+2009-04-13 15:47 -0400  djerius  <djerius@cfa.harvard.edu>  (b724553178ec)
+
+	* t/bin_err.t:
+	test for minimum number of elments was broken.
+
+2009-04-10 17:20 -0400  djerius  <djerius@cfa.harvard.edu>  (329bdcacfc69)
+
+	* lib/CXC/PDL/bin_err.pod: new file.
+	* lib/CXC/PDL/bin_err.pd, lib/CXC/PDL/bin_err.pod:
+	move documentation to separate file to make life easier
+
+2009-04-10 17:16 -0400  djerius  <djerius@cfa.harvard.edu>  (b3b43583ec04)
+
+	* lib/CXC/PDL/bin_err.pl: new file.
+	* lib/CXC/PDL/bin_err.pd, lib/CXC/PDL/bin_err.pl:
+	move Perl code into a separate file to make life easier
+
+2008-04-25 17:27 -0400  djerius  <djerius@cfa.harvard.edu>  (1389be4917e6)
+
+	* .hgtags:
+	Added tag 0.06 for changeset e93beb3796ac
+
+2008-04-25 17:26 -0400  djerius  <djerius@cfa.harvard.edu>  (e93beb3796ac [0.06])
+
+	* ChangeLog, Changes, lib/CXC/PDL/Bin1D.pd:
+	update for release
+
+2008-04-25 17:25 -0400  djerius  <djerius@cfa.harvard.edu>  (a0ce12109927)
 
 	* lib/CXC/PDL/bin_sdev.c:
 	quiet incorrect compile warning about uninitialized variable use
