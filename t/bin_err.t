@@ -113,11 +113,11 @@ sub test_it {
 
 
     # make sure that the number of elements are correctly limited
-    ok ( all( $mskd{nelem} >= $in{nmin} ), "$testid: minimum nelem" );
+    ok ( all( $out{nelem} >= $in{nmin} ), "$testid: minimum nelem" );
     ok ( $in{nmax} ? all( $mskd{nelem} <= $in{nmax} ) : 1, "$testid: maximum nelem" );
 
     # make sure that the bin widths are correctly limited
-    ok ( all( $mskd{width} >= $in{wmin} ), "$testid: minimum bin width" );
+    ok ( all( $out{width} >= $in{wmin} ), "$testid: minimum bin width" );
     ok ( $in{wmax} ? all( $mskd{width} <= $in{wmax} ) : 1, "$testid: maximum bin width" );
 
     # check if signal to noise ratio is greater than requested min
