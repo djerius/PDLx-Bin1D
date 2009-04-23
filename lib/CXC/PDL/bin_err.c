@@ -1,9 +1,22 @@
 
+
 int curind = 0;         /* index of current bin */
 double sum = 0;         /* sum of signal in current bin */
-int nin = 0;            /* number of elements in the 
-			   current bin */
+double width = 0;	/* width of current bin (if applicable) */
+int nin = 0;            /* number of elements in the current bin */
 double sum_err2 = 0;    /* sum of error^2 in current bin */
+
+/* only worry about bin widths if the caller has requested a limit. if
+   caller hasn't, there's no guarantee that the bwidth piddle is valid */
+int handle_width = $COMP(wmin) > 0 && $COMP(wmax) > 0;
+
+/* simplify the logic below by setting max values to the largest possible value
+   if the user hasn't specified one */
+if ( $COMP(wmax) == 0 ) 
+    $COMP(wmax) = DBL_MAX;
+
+if ( $COMP(nmax) == 0 ) 
+    $COMP(nmax) = LONG_MAX;
 
 loop(n) %{
     double err2 = $err();
@@ -22,22 +35,34 @@ loop(n) %{
     sum_err2 += err2;
 
     sum  += $signal();
+    if ( handle_width )
+	width += $bwidth( m => curind );
+
     nin++;
     $bin() = curind;
 
     if ( nin == 1 )
 	$ifirst( n => curind ) = n;
 
-    if ( nin == $COMP(nmax)
-	 || (   nin >= $COMP(nmin)
-		&& sum / sqrt(sum_err2) >= $COMP(min_sn)  )
+    if ( 
+	/* maximum number of elements achieved */
+	   nin >= $COMP(nmax)
+
+	/* maximum bin width achieved */
+  	|| width >= $COMP(wmax)
+
+	/* minimum number of elements, minimum bin width, and minimum S/N achieved */
+        || (   nin   >= $COMP(nmin) 
+	    && width >= $COMP(wmin) 
+	    && sum / sqrt(sum_err2) >= $COMP(min_sn)  )
 	 )
     {
 	$sum( n => curind ) = sum;
+	$width( n => curind ) = width;
 	$sigma( n => curind ) = sqrt(sum_err2);
 	$nelem( n => curind ) = nin;
 	$ilast( n => curind ) = n;
-	sum = sum_err2 = nin = 0;
+	sum = sum_err2 = width = nin = 0;
 	curind++;
     }
 %}
@@ -68,6 +93,8 @@ if ( nin )
 	 tmp = $sigma( n => curind );
 	 sum_err2 += tmp * tmp;
 	 sum  += $sum( n => curind );
+	 if ( handle_width )
+	     width += $sum( n => curind );
 	 nin  += $nelem( n => curind );
 
 	 if ( sum / sqrt(sum_err2) >= $COMP(min_sn) )
@@ -75,6 +102,7 @@ if ( nin )
      }	
 
      $sum( n => curind ) = sum;
+     $width( n => curind ) = width;
      $sigma( n => curind ) = sqrt(sum_err2);
      $nelem( n => curind ) = nin;
      $ilast( n => curind ) = $SIZE(n)-1;

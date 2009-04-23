@@ -5,31 +5,52 @@ sub PDL::bin_err {
 
     my ( $vec, $err, $min_sn ) = @_;
 
-    my %opt = iparse( { err_sq => 0, nmin => 1, nmax => 0},
+    my %opt = iparse( { err_sq => 0,
+			nmin => 1,
+			nmax => 0,
+			wmin => 0,
+			wmax => 0,
+			bwidth => undef,
+		      },
 		      $opts );
 
     barf( "minimum number of elements must be at least 1\n" )
       if $opt{nmin} < 1;
 
-    PDL::_bin_err_int( $vec, $err,
+    barf( "bwidth has must be specified if either of wmin or wmax is non-zero\n" )
+      if ($opt{wmin} || $opt{wmax}) && ! defined $opt{bwidth};
+
+    barf( "bwidth has wrong dims\n" )
+      if   defined $opt{bwidth}
+	&& join(';', $opt{bwidth}->dims) ne join(';', $vec->dims);
+
+    PDL::_bin_err_int( $vec, $err, $opt{bwidth} ||= null(),
 		       (my $bin   = null()),
 		       (my $nbins = null()),
 		       (my $sum   = null()),
+		       (my $width = null()),
 		       (my $nelem = null()),
 		       (my $sigma = null()),
 		       (my $ifirst = null()),
 		       (my $ilast = null()),
 		       (null()),
-		       $min_sn, $opt{nmin}, $opt{nmax}, $opt{err_sq}
+		       $min_sn,
+		       @opt{qw( nmin nmax err_sq wmin wmax )},
 		     );
     $nbins--;
 
-    return ( bin => $bin,
-	     map { $_->[0], $_->[1]->slice("0:$nbins")->copy} 
+    my %results =
+      ( bin => $bin,
+	     map { $_->[0], $_->[1]->slice("0:$nbins")->copy}
 	     [ sum    => $sum],
 	     [ nelem  => $nelem],
 	     [ sigma  => $sigma],
 	     [ ifirst => $ifirst],
 	     [ ilast  => $ilast],
+	     [ width  => $width],
 	   );
+
+
+
+    return %results;
 }

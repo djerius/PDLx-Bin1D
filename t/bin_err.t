@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use PDL;
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 BEGIN {
   use_ok('CXC::PDL::Bin1D');
@@ -17,6 +17,7 @@ my $err  = sqrt($data);
 
 test_it( min_sn => 20,
          nmin => 1,
+	 nmax => 0,
          data  => $data,
          err   => $err,
        );
@@ -55,6 +56,10 @@ sub test_it {
     # make sure that the minimum number of elements is in each bin
     ok ( all( $out{nelem} >= $in{nmin} ),
          "$testid: minimum nelem" );
+
+    # make sure that the maximum number of elements is not exceeded
+    ok ( $in{nmax} ? all( $out{nelem} <= $in{nmax} ) : 1,
+         "$testid: maximum nelem" );
 
     # check if signal to noise ratio is greater than requested min
     ok ( all( $out{sum} / $out{sigma} >= $in{min_sn} ),

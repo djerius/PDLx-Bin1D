@@ -7,9 +7,11 @@
         Pars => join( ';',
                       'signal(n)',
                       'err(n)',
+		      'bwidth(m)',
                       'int [o] bin(n)',
                       'int [o] nbins()',
                       'double [o] sum(n)',
+                      'double [o] width(n)',
                       'int [o] nelem(n)',
                       'double [o] sigma(n)',
                       'int [o] ifirst(n)',
@@ -21,6 +23,8 @@
                           'long nmin',
                           'long nmax',
                           'int err_sq',
+			  'double wmin',
+			  'double wmax',
 			 ),
         Code => filter_code( 0, $code),
         HandleBad => 1,
@@ -30,6 +34,8 @@
        );
 
 }
+
+pp_addhdr( "#include <float.h>\n#include <limits.h>" );
 
 pp_addpm( { At => 'Top'}, read_code( 'bin_err.pod' ) );
 
