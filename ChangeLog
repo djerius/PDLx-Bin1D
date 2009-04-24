@@ -1,8 +1,23 @@
-2009-04-23  Diab Jerius  <dj@macabre.cfa.harvard.edu>
+2009-04-24  Diab Jerius  <dj@macabre.cfa.harvard.edu>
 
-	Tag 0.10
+	Tag 0.11
 
-2009-04-23 15:51 -0400  djerius  <djerius@cfa.harvard.edu>  (8811593bb8ce [tip])
+2009-04-24 15:53 -0400  djerius  <djerius@cfa.harvard.edu>  (8441f7d65f78 [tip])
+
+	* lib/CXC/PDL/bin_err.c, t/bin_err.t:
+	widths were not correctly accumulated. fixed and added test
+
+2009-04-23 16:33 -0400  djerius  <djerius@cfa.harvard.edu>  (061ac99a89fd)
+
+	* .hgtags:
+	Added tag 0.10 for changeset 4c229dc40e25
+
+2009-04-23 16:31 -0400  djerius  <djerius@cfa.harvard.edu>  (4c229dc40e25 [0.10])
+
+	* ChangeLog, Changes, lib/CXC/PDL/Bin1D.pd:
+	update version and logs for release
+
+2009-04-23 15:51 -0400  djerius  <djerius@cfa.harvard.edu>  (8811593bb8ce)
 
 	* lib/CXC/PDL/bin_sdev.pl, lib/CXC/PDL/bin_sdev.pod: new file.
 	* lib/CXC/PDL/bin_sdev.pd, lib/CXC/PDL/bin_sdev.pl,
