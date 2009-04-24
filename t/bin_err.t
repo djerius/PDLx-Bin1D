@@ -100,7 +100,7 @@ sub test_it {
 
         push @sum, $data->mslice([$ifirst,$ilast])->sum;
         push @err, sqrt($err2->mslice([$ifirst,$ilast])->sum);
-	push @sn, $sum[-1]/$err[-1];
+	push @sn, $err[-1] > 0 ? $sum[-1]/$err[-1] : 0;
 
 	# this returns the S/N for each output bin using one less
 	# inputbin. this is used later on to test if the smallest

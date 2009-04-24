@@ -34,6 +34,13 @@ Options are parsed by PDL::Options, so unique abbreviations are accepted.
 
 =over
 
+=item fold (boolean)
+
+If true, the last bin may be folded into the preceding bin in order to
+ensure that the last bin achieves the requested SNR.  If this is not
+specified, it will be set to true if the C<nmax> or C<wmax> options
+are not set, otherwise it will be false.
+
 =item nmin (default: 1 )
 
 The minimum number of elements per bin

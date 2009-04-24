@@ -21,6 +21,7 @@
                     ),
         OtherPars => join(';',
                           'double min_sn',
+			  'int fold',
                           'long nmin',
                           'long nmax',
                           'int err_sq',

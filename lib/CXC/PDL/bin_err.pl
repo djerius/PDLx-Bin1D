@@ -17,6 +17,7 @@ sub PDL::bin_err {
 			wmin => 0,
 			wmax => 0,
 			width => undef,
+			fold => undef,
 		      },
 		      $opts );
 
@@ -25,6 +26,13 @@ sub PDL::bin_err {
 
     barf( "width has must be specified if either of wmin or wmax is non-zero\n" )
       if ($opt{wmin} || $opt{wmax}) && ! defined $opt{width};
+
+    # if the user hasn't specified whether to fold the last bin,
+    # turn it on if there aren't *maximum* constraints
+    if ( ! defined $opt{fold} )
+    {
+	$opt{fold} = ! ( $opt{wmax} > 0 || $opt{nmax} > 0 );
+    }
 
     barf( "width has wrong dims\n" )
       if   defined $opt{width}
@@ -44,7 +52,7 @@ sub PDL::bin_err {
 		       (my $rc    = null()),
 		       (null()),
 		       $min_sn,
-		       @opt{qw( nmin nmax err_sq wmin wmax )},
+		       @opt{qw( fold nmin nmax err_sq wmin wmax )},
 		     );
     $nbins--;
 

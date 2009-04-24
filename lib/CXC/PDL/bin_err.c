@@ -92,40 +92,43 @@ loop(n) %{
 /* record last bin if it's not empty */
 if ( nin )
  {
-     /* a non empty bin means that its S/N is too low.
-	fold it into the previous bin if possible.
-	sometimes that will actually lower the S/N
-	of the previous bin; keep going until we
-	can't fold anymore or we get the proper S/N
+     done = 0;
+
+     /* a non empty bin means that its S/N is too low.  fold it into
+	the previous bin if requested & possible.  sometimes that will
+	actually lower the S/N of the previous bin; keep going until
+	we can't fold anymore or we get the proper S/N
      */
-     while ( curind > 0  )
+     if ( $COMP(fold) )
      {
-	 double tmp;
-	 int ni;
-	 curind -=1;
-
-	 for (ni = $ifirst( n => curind ) ; ni < $SIZE(n) ; ni++ )
+	 done = BIN_FOLDED;
+	 while ( curind > 0  )
 	 {
+	     double tmp;
+	     int ni;
+	     curind -=1;
+
+	     for (ni = $ifirst( n => curind ) ; ni < $SIZE(n) ; ni++ )
+	     {
 #if HANDLE_BAD_VALUE
-	     if ( $ISGOOD(bin(n => ni)) )
+		 if ( $ISGOOD(bin(n => ni)) )
 #endif /* HANDLE_BAD_VALUE */
-		 $bin( n => ni ) = curind;
+		     $bin( n => ni ) = curind;
+	     }
+
+	     tmp = $sigma( n => curind );
+	     sum_err2 += tmp * tmp;
+	     sum  += $sum( n => curind );
+	     if ( handle_width )
+		 width += $width( n => curind );
+	     nin  += $nelem( n => curind );
+
+	     if ( sum / sqrt(sum_err2) >= $COMP(min_sn) )
+		 break;
 	 }
+     }
 
-	 tmp = $sigma( n => curind );
-	 sum_err2 += tmp * tmp;
-	 sum  += $sum( n => curind );
-	 if ( handle_width )
-	     width += $width( n => curind );
-	 nin  += $nelem( n => curind );
-
-	 if ( sum / sqrt(sum_err2) >= $COMP(min_sn) )
-	     break;
-     }	
-
-    done = 
-	BIN_FOLDED
-	| 
+    done |=
 	( (nin   >= $COMP(nmax) )
 	  ? BIN_GENMAX : 0 )
 	|
