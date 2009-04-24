@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use PDL;
-use Test::More tests => 37;
+use Test::More tests => 38;
 
 BEGIN {
   use_ok('CXC::PDL::Bin1D');
@@ -141,6 +141,16 @@ sub test_it {
     # make sure that the bin widths are correctly limited
     ok ( all( $out{width} >= $in{wmin} ), "$testid: minimum bin width" );
     ok ( $in{wmax} ? all( $mskd{width} <= $in{wmax} ) : 1, "$testid: maximum bin width" );
+
+    # and make sure that the widths are correctly calculated
+    if ( defined $in{width} )
+    {
+	my $wsum = $in{width}->cumusumover;
+	my $widths = $wsum->index($out{ilast}) - $wsum->index($out{ifirst}) + $in{width}->index($out{ifirst});
+
+	ok ( all( approx( $widths, $out{width}, 1e-6 ) ), "$testid: widths" );
+    }
+
 
     # check if signal to noise ratio is greater than requested min
     ok ( all( $mskd{sum} / $mskd{sigma} >= $min_sn ),

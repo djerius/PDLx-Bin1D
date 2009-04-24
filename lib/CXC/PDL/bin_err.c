@@ -44,7 +44,7 @@ loop(n) %{
 
     sum  += $signal();
     if ( handle_width )
-	width += $bwidth( m => curind );
+	width += $bwidth( m => n );
 
     nin++;
     $bin() = curind;
@@ -116,7 +116,7 @@ if ( nin )
 	 sum_err2 += tmp * tmp;
 	 sum  += $sum( n => curind );
 	 if ( handle_width )
-	     width += $sum( n => curind );
+	     width += $width( n => curind );
 	 nin  += $nelem( n => curind );
 
 	 if ( sum / sqrt(sum_err2) >= $COMP(min_sn) )
