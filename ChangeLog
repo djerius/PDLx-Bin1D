@@ -1,8 +1,24 @@
 2009-04-24  Diab Jerius  <dj@macabre.cfa.harvard.edu>
 
-	Tag 0.11
+	* Tag 0.12
 
-2009-04-24 15:53 -0400  djerius  <djerius@cfa.harvard.edu>  (8441f7d65f78 [tip])
+2009-04-24 16:31 -0400  djerius  <djerius@cfa.harvard.edu>  (683d54ac3b97 [tip])
+
+	* lib/CXC/PDL/bin_err.c, lib/CXC/PDL/bin_err.pd,
+	lib/CXC/PDL/bin_err.pl, lib/CXC/PDL/bin_err.pod, t/bin_err.t:
+	make bin_err bin folding optional and provide intelligent default
+
+2009-04-24 15:58 -0400  djerius  <djerius@cfa.harvard.edu>  (05aa1c3e9202)
+
+	* .hgtags:
+	Added tag 0.11 for changeset afadac9a586d
+
+2009-04-24 15:58 -0400  djerius  <djerius@cfa.harvard.edu>  (afadac9a586d [0.11])
+
+	* ChangeLog, Changes, lib/CXC/PDL/Bin1D.pd:
+	update version and logs for release
+
+2009-04-24 15:53 -0400  djerius  <djerius@cfa.harvard.edu>  (8441f7d65f78)
 
 	* lib/CXC/PDL/bin_err.c, t/bin_err.t:
 	widths were not correctly accumulated. fixed and added test

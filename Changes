@@ -1,5 +1,8 @@
 Revision history for CXC-PDL-Bin1D
 
+0.12   Fri Apr 24 16:32:15 EDT 2009
+       - bin_err bin folding is now optional
+
 0.11   Fri Apr 24 15:53:48 EDT 2009
        - bin_err widths constraints were handled incorrectly
 
