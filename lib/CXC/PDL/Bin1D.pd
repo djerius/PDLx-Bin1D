@@ -80,6 +80,7 @@ All functions are made available in the B<PDL> namespace.
 
 =head1 FUNCTIONS
 
+=cut
 EOD
 
 pp_addpm( { At => 'Bot'}, q{
