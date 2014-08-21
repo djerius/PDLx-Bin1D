@@ -37,7 +37,7 @@
 
 }
 
-pp_addhdr( "#include <float.h>\n#include <limits.h>" );
+pp_addhdr( "#include <float.h>\n#include <limits.h>\n" );
 
 pp_addpm( { At => 'Top'}, read_code( 'bin_err.pod' ) );
 
