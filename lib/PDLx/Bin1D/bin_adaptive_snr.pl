@@ -1,12 +1,6 @@
 ## no critic ProhibitAccessOfPrivateData
 
-use constant BIN_GTMINSN=> 16;
-use constant BIN_FOLDED =>  8;
-use constant BIN_GENMAX =>  4;
-use constant BIN_GEWMAX =>  2;
-use constant BIN_OK     =>  1;
-
-sub PDL::bin_err {
+sub PDL::bin_adaptive_snr {
     my $opts = 'HASH' eq ref $_[-1] ? pop : {};
 
     my ( $vec, $err, $min_sn ) = @_;
@@ -16,7 +10,7 @@ sub PDL::bin_err {
 			nmax => 0,
 			wmin => 0,
 			wmax => 0,
-			width => undef,
+			weight => undef,
 			fold => undef,
 		      },
 		      $opts );
@@ -24,8 +18,8 @@ sub PDL::bin_err {
     barf( "minimum number of elements must be at least 1\n" )
       if $opt{nmin} < 1;
 
-    barf( "width has must be specified if either of wmin or wmax is non-zero\n" )
-      if ($opt{wmin} || $opt{wmax}) && ! defined $opt{width};
+    barf( "weight has must be specified if either of wmin or wmax is non-zero\n" )
+      if ($opt{wmin} || $opt{wmax}) && ! defined $opt{weight};
 
     # if the user hasn't specified whether to fold the last bin,
     # turn it on if there aren't *maximum* constraints
@@ -34,17 +28,17 @@ sub PDL::bin_err {
 	$opt{fold} = ! ( $opt{wmax} > 0 || $opt{nmax} > 0 );
     }
 
-    barf( "width has wrong dims\n" )
-      if   defined $opt{width}
-	&& join(';', $opt{width}->dims) ne join(';', $vec->dims);
+    barf( "weight has wrong dims\n" )
+      if   defined $opt{weight}
+	&& join(';', $opt{weight}->dims) ne join(';', $vec->dims);
 
-    $opt{width} = null() unless defined $opt{width};
+    $opt{weight} = null() unless defined $opt{weight};
 
-    PDL::_bin_err_int( $vec, $err, $opt{width},
+    PDL::_bin_err_int( $vec, $err, $opt{weight},
 		       (my $bin   = null()),
 		       (my $nbins = null()),
 		       (my $sum   = null()),
-		       (my $width = null()),
+		       (my $weight = null()),
 		       (my $nelem = null()),
 		       (my $sigma = null()),
 		       (my $ifirst = null()),
@@ -64,7 +58,7 @@ sub PDL::bin_err {
 	     [ sigma  => $sigma],
 	     [ ifirst => $ifirst],
 	     [ ilast  => $ilast],
-	     [ width  => $width],
+	     [ weight  => $weight],
 	     [ rc     => $rc ]
 	   );
 
