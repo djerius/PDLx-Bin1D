@@ -1,31 +1,17 @@
-use PDL::Core::Dev;
-use ExtUtils::MakeMaker;
+# in Makefile.PL
+use inc::Module::Install;
 
-use File::Spec::Functions qw( catfile );
+name 'PDLx-Bin1D';
+all_from 'lib/PDLx/Bin1D.pm';
 
-use strict;
-use warnings;
+makemaker_args(
 
-our @dirh = qw( lib CXC PDL );
+    PL_FILES => {
+        'lib/PDLx/Bin1D/XS.pm.PL' =>
+          [ 'lib/PDLx/Bin1D/XS.pm', 'lib/PDLx/Bin1D/XS.xs' ],
+    },
+    XS => { 'lib/PDLx/Bin1D/XS.xs' => 'lib/PDLx/Bin1D/XS.c' },
 
-our @deps = map { catfile( @dirh, $_ ) }
-  qw( bin_err.c bin_err.pd bin_err.pl
-      bin_sdev.c bin_sdev.pd bin_sdev.pl );
+);
 
-our $deps = join(' ', @deps );
-
-our @pprec = ( catfile( @dirh, 'Bin1D.pd'), 'Bin1D', 'CXC::PDL::Bin1D' );
-my %args = pdlpp_stdargs(\@pprec);
-
-$args{VERSION_FROM} = catfile( @dirh, 'Bin1D.pd' );
-
-WriteMakefile( %args );
-
-sub MY::postamble {
-    my $postamble = pdlpp_postamble(\@::pprec);
-
-    # make Bin1D.pm depend upon all of its included files
-    $postamble =~ s/^(Bin1D.pm:.*)/$1 $::deps/m;
-
-    return $postamble;
-}
+WriteAll;
