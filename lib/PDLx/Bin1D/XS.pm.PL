@@ -31,38 +31,46 @@ use constant;
 use File::Basename qw[ fileparse ];
 use File::Spec::Functions qw[ catfile ];
 
-use constant LIBDIR => (fileparse( $0 ))[1];
+use constant LIBDIR => ( fileparse( $0 ) )[1];
 
 use PDL::PP ( __PACKAGE__, __PACKAGE__, catfile( LIBDIR, 'XS' ) );
 
-our $VERSION = '0.12';
+our $VERSION = '0.01';
+
+use PDL::Types qw[ typefld ];
+
+# newer(?) version of PDL define index types:
+#  'PDL_Indx' (as a C typedef) and 'indx' for signatures
+# for backwards compatibility, support long as well as the others
+
+my $IndexParsType   = eval { typefld( 'PDL_IND', 'ppforcetype' ) } || typefld( 'PDL_L', 'ppforcetype' );
+
+if ( ! eval { typefld( 'PDL_IND', 'ctype' ) } ) {
+
+    pp_addhdr( "typedef long PDL_Indx;\n" );
+
+}
 
 
-my ( %BIN_SNR, %BIN_RC );
-
-my $perl_flag_code = q/
-    %BIN_SNR = (
+my %CONSTANTS = (
+    BIN_SNR => {
         BIN_SNR_HAVE_ERROR  => 1,
         BIN_SNR_HAVE_ERROR2 => 2,
         BIN_SNR_FOLD        => 4,
-	BIN_SNR_HAVE_WIDTH  => 8,
+        BIN_SNR_HAVE_WIDTH  => 8,
         BIN_SNR_ERROR_SDEV  => 16,
-        BIN_SNR_HAVE_WEIGHT => 32,
-    );
-
-    %BIN_RC = (
+	BIN_SNR_SET_BAD     => 32,
+    },
+    BIN_RC => {
         BIN_GTMINSN => 16,
         BIN_FOLDED  => 8,
         BIN_GENMAX  => 4,
         BIN_GEWMAX  => 2,
         BIN_OK      => 1,
-    );
-/;
+    } );
 
-eval $perl_flag_code;
-
-constant->import( \%BIN_SNR );
-constant->import( \%BIN_RC );
+my @CONSTANTS = ( map { keys %$_} values %CONSTANTS );
+my @EXPORT_OK;
 
 sub slurp {
     my $file = catfile( LIBDIR, shift );
@@ -74,13 +82,19 @@ pp_core_importList( '()' );
 
 pp_bless( __PACKAGE__ );
 
-pp_addpm( { At => 'Top' }, <<"EOD" );
+pp_addpm( { At => 'Top' }, <<'EOD' );
 use strict;
 use warnings;
+
+our @EXPORT_OK;
+our %EXPORT_TAGS;
+EOD
+
+pp_addpm( { At => 'Top' }, <<"EOD" );
 BEGIN{ our \$VERSION = '$VERSION' };
+EOD
 
-use PDL::Options;
-
+pp_addpm( { At => 'Top' }, <<'EOD' );
 =begin dealing_with_undocumented_boilerplate_routines
 
 =over
@@ -124,42 +138,62 @@ pp_addhdr(
             my $h = $_;
             map { sprintf( "#define %s %s", $_, $h->{$_} ); }
               sort { $h->{$a} <=> $h->{$b} } keys %$h;
-          } \%BIN_SNR,
-        \%BIN_RC
-    ) . "\n" );
+          } values %CONSTANTS
+      )
+      . "\n"
+);
 
-pp_addpm( join( "\n", 'my ( %BIN_SNR, %BIN_RC );', $perl_flag_code ), );
+pp_addpm(
+    { At => 'Top' },
+    join "\n",
+    'use constant { ',
+    (
+        map {
+            my $h = $_;
+            map { sprintf( "%s => %s,", $_, $h->{$_} ); }
+              sort { $h->{$a} <=> $h->{$b} } keys %$h;
+          } values %CONSTANTS,
+    ),
+    '};',
+);
 
+my $c_code = slurp( 'bin_adaptive_snr.c' );
 
-my $c_code  = slurp( 'bin_adaptive_snr.c' );
-
+push @EXPORT_OK, 'bin_adaptive_snr';
 pp_def(
     'bin_adaptive_snr',
     Pars => join(
         ';',
         'signal(n)',        # piddle containing signal to bin
         'error(n)',         # error piddle if flags && HAVE_ERROR or HAVE_ERROR2
-        'weight(n)',        # optional weight for each signal datum
         'width(n)',         # optional width for each signal datum
-        'int [o] bin(n)',   # output index
-        'int [o] nbins()',
-        'int [o] nelem(n)',
-        'double [o] bsignal(n)',
-        'double [o] bweight(n)',
-        'double [o] bwidth(n)',
-        'double [o] berror(n)',
-        'double [o] bsnr(n)',
-        'int [o] ifirst(n)',
-        'int [o] ilast(n)',
+        "$IndexParsType [o] index(n)",   # output index
+        "$IndexParsType [o] nbins()",
+        "$IndexParsType [o] nelem(n)",
+        'double [o] b_signal(n)',
+        'double [o] b_width(nwidth)',
+        'double [o] b_error(nerror)',
+        'double [o] b_snr(n)',
+        "$IndexParsType [o] ifirst(n)",
+        "$IndexParsType [o] ilast(n)",
         'int [o] rc(n)',
+	'double [t] b_signal2(nbsignal2)',
     ),
-    OtherPars => join( ';',
-        'unsigned long optflags',  # can't call it flags; clashes with PDL internals
+    RedoDimsCode => q/
+    long n = $PDL(signal)->dims[0];
+    $SIZE(nwidth) = $COMP(optflags) & BIN_SNR_HAVE_WIDTH ? n : 0 ;
+    $SIZE(nerror) = $COMP(optflags) & BIN_SNR_HAVE_ERROR | BIN_SNR_ERROR_SDEV ? n : 0 ;
+    $SIZE(nbsignal2) = $COMP(optflags) & BIN_SNR_ERROR_SDEV ? n : 0 ;
+/,
+    OtherPars => join(
+        ';',
+        'unsigned long optflags'
+        ,    # can't call it flags; clashes with PDL internals
         'double min_snr',
-        'long nmin',
-        'long nmax',
-        'double wmin',
-        'double wmax',
+        "$IndexParsType min_nelem",
+        "$IndexParsType max_nelem",
+        'double min_width',
+        'double max_width',
     ),
     Code      => $c_code,
     HandleBad => 1,
@@ -197,6 +231,17 @@ may find a copy at
 =cut
 EOD
 
+
+pp_export_nothing();
+
+pp_addpm(
+    { At => 'Top' },
+    qq[\$EXPORT_TAGS{constants} = [ qw(\n@{[ join "\n", @CONSTANTS  ]}\n)];\n]
+);
+pp_addpm( { At => 'Top' },
+    qq[\$EXPORT_TAGS{Func} = [ qw(\n@{[ join "\n", @EXPORT_OK  ]}\n)];\n] );
+pp_addpm( { At => 'Top' },
+    q[@EXPORT_OK = map { @{$_} } values %EXPORT_TAGS] . ";\n" );
 
 pp_done();
 
