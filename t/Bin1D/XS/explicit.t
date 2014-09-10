@@ -49,6 +49,8 @@ subtest 'explict errors' => sub {
 
         $in->{$_} = $signal{$_} foreach keys %signal;
 
+	$exp->{$_} = topdl( $exp->{$_} ) for keys %$exp;
+
         my $index = $exp->{nelem} - 1;
         $exp->{error} = $error_sum->index( $index );
         $exp->{snr}   = $snr->index( $index );
@@ -64,9 +66,9 @@ subtest 'explict errors' => sub {
                 fold    => 0,
             },
             {
-                signal => pdl( 4,      4,      2 ),
-                nelem  => pdl( 4,      4,      2 ),
-                rc     => pdl( BIN_OK, BIN_OK, 0 ),
+                signal => [ 4,      4,      2 ],
+                nelem  => [ 4,      4,      2 ],
+                rc     => [ BIN_OK, BIN_OK, 0 ],
             },
         ),
 
@@ -76,9 +78,9 @@ subtest 'explict errors' => sub {
                 fold    => 1,
             },
             {
-                signal => pdl( 4,      6 ),
-                nelem  => pdl( 4,      6 ),
-                rc     => pdl( BIN_OK, BIN_FOLDED | BIN_OK ),
+                signal => [ 4,      6 ],
+                nelem  => [ 4,      6 ],
+                rc     => [ BIN_OK, BIN_FOLDED | BIN_OK ],
             },
         ),
 
@@ -89,9 +91,9 @@ subtest 'explict errors' => sub {
                 width     => $width,
             },
             {
-                signal => pdl( 4,      4,      2 ),
-                nelem  => pdl( 4,      4,      2 ),
-                rc     => pdl( BIN_OK, BIN_OK, 0 ),
+                signal => [ 4,      4,      2 ],
+                nelem  => [ 4,      4,      2 ],
+                rc     => [ BIN_OK, BIN_OK, 0 ],
             },
         ),
 
@@ -103,11 +105,11 @@ subtest 'explict errors' => sub {
                 width     => $width,
             },
             {
-                signal => pdl( 2, 2, 2, 2, 2 ),
-                nelem  => pdl( 2, 2, 2, 2, 2 ),
-                rc => pdl( BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX,
+                signal => [ 2, 2, 2, 2, 2 ],
+                nelem  => [ 2, 2, 2, 2, 2 ],
+                rc => [ BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX,
                     BIN_GEWMAX
-                ),
+                ],
             },
         ),
 
@@ -117,9 +119,9 @@ subtest 'explict errors' => sub {
                 width     => $width,
             },
             {
-                signal => pdl( 4,                   4,                   2 ),
-                nelem  => pdl( 4,                   4,                   2 ),
-                rc     => pdl( BIN_OK | BIN_GEWMAX, BIN_OK | BIN_GEWMAX, 0 ),
+                signal => [ 4,                   4,                   2 ],
+                nelem  => [ 4,                   4,                   2 ],
+                rc     => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_GEWMAX, 0 ],
             },
         ),
 
@@ -130,9 +132,9 @@ subtest 'explict errors' => sub {
                 width     => $width,
             },
             {
-                signal => pdl( 4,                   6 ),
-                nelem  => pdl( 4,                   6 ),
-                rc     => pdl( BIN_OK | BIN_GEWMAX, BIN_OK | BIN_FOLDED, ),
+                signal => [ 4,                   6 ],
+                nelem  => [ 4,                   6 ],
+                rc     => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_FOLDED, ],
             },
         ),
 
@@ -141,9 +143,9 @@ subtest 'explict errors' => sub {
                 min_nelem => 3,
             },
             {
-                signal => pdl( 3,      3,      3,      1 ),
-                nelem  => pdl( 3,      3,      3,      1 ),
-                rc     => pdl( BIN_OK, BIN_OK, BIN_OK, 0 ),
+                signal => [ 3,      3,      3,      1 ],
+                nelem  => [ 3,      3,      3,      1 ],
+                rc     => [ BIN_OK, BIN_OK, BIN_OK, 0 ],
             },
         ),
 
@@ -152,9 +154,9 @@ subtest 'explict errors' => sub {
                 max_nelem => 3,
             },
             {
-                signal => pdl( 3,          3,          3,          1 ),
-                nelem  => pdl( 3,          3,          3,          1 ),
-                rc     => pdl( BIN_GENMAX, BIN_GENMAX, BIN_GENMAX, 0 ),
+                signal => [ 3,          3,          3,          1 ],
+                nelem  => [ 3,          3,          3,          1 ],
+                rc     => [ BIN_GENMAX, BIN_GENMAX, BIN_GENMAX, 0 ],
             },
         ),
 
@@ -164,9 +166,9 @@ subtest 'explict errors' => sub {
                 max_nelem => 4,
             },
             {
-                signal => pdl( 4,          4,          2 ),
-                nelem  => pdl( 4,          4,          2 ),
-                rc     => pdl( BIN_GENMAX, BIN_GENMAX, 0 ),
+                signal => [ 4,          4,          2 ],
+                nelem  => [ 4,          4,          2 ],
+                rc     => [ BIN_GENMAX, BIN_GENMAX, 0 ],
             },
         ),
 
@@ -176,14 +178,14 @@ subtest 'explict errors' => sub {
                 max_nelem => 4,
             },
             {
-                signal => pdl( 3, 3, 3, 1 ),
-                nelem  => pdl( 3, 3, 3, 1 ),
-                rc     => pdl(
+                signal => [ 3, 3, 3, 1 ],
+                nelem  => [ 3, 3, 3, 1 ],
+                rc     => [
                     BIN_OK | BIN_GTMINSN,
                     BIN_OK | BIN_GTMINSN,
                     BIN_OK | BIN_GTMINSN,
                     0
-                ),
+                ],
             },
         ),
 
@@ -215,6 +217,8 @@ subtest 'errors from signal' => sub {
 
         $in->{signal}     = $signal->zeroes;
         $in->{error_sdev} = 1;
+
+	$exp->{$_} = topdl( $exp->{$_} ) for keys %$exp;
 
         $exp->{signal} = zeroes( $nbins );
         $exp->{error}  = zeroes( $nbins );
@@ -262,7 +266,7 @@ subtest 'errors from signal' => sub {
                 fold    => 0,
             },
             {
-                rc => pdl( BIN_OK, BIN_OK, 0 ),
+                rc => [ BIN_OK, BIN_OK, 0 ],
             },
         ),
 
@@ -273,7 +277,7 @@ subtest 'errors from signal' => sub {
                 fold    => 1,
             },
             {
-                rc => pdl( BIN_OK, BIN_OK | BIN_FOLDED ),
+                rc => [ BIN_OK, BIN_OK | BIN_FOLDED ],
             },
         ),
 
@@ -286,7 +290,7 @@ subtest 'errors from signal' => sub {
                 fold      => 0,
             },
             {
-                rc => pdl( BIN_OK, BIN_OK, 0 ),
+                rc => [ BIN_OK, BIN_OK, 0 ],
             },
         ),
 
@@ -300,9 +304,9 @@ subtest 'errors from signal' => sub {
                 fold      => 0,
             },
             {
-                rc => pdl( BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX,
+                rc => [ BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX,
                     BIN_GEWMAX
-                ),
+                ],
             },
         ),
 
@@ -315,7 +319,7 @@ subtest 'errors from signal' => sub {
                 fold      => 0,
             },
             {
-                rc => pdl( BIN_OK | BIN_GEWMAX, BIN_OK | BIN_GEWMAX, 0 ),
+                rc => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_GEWMAX, 0 ],
             },
         ),
 
@@ -328,7 +332,7 @@ subtest 'errors from signal' => sub {
                 fold      => 1,
             },
             {
-                rc => pdl( BIN_OK | BIN_GEWMAX, BIN_OK | BIN_FOLDED ),
+                rc => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_FOLDED ],
             },
         ),
 
@@ -341,7 +345,7 @@ subtest 'errors from signal' => sub {
             },
             {
                 rc =>
-                  pdl( BIN_OK | BIN_GTMINSN, BIN_OK, BIN_OK | BIN_GTMINSN, 0 ),
+                  [ BIN_OK | BIN_GTMINSN, BIN_OK, BIN_OK | BIN_GTMINSN, 0 ],
             },
         ),
 
@@ -353,7 +357,7 @@ subtest 'errors from signal' => sub {
                 max_nelem => 4,
             },
             {
-                rc => pdl( BIN_GENMAX, BIN_GENMAX, 0 ),
+                rc => [ BIN_GENMAX, BIN_GENMAX, 0 ],
             },
         ),
 
@@ -365,12 +369,12 @@ subtest 'errors from signal' => sub {
                 max_nelem => 4,
             },
             {
-                rc => pdl(
+                rc => [
                     BIN_OK | BIN_GTMINSN,
                     BIN_OK | BIN_GTMINSN,
                     BIN_OK | BIN_GTMINSN,
                     0
-                ),
+                ],
             },
         ),
 
