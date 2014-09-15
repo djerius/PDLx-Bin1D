@@ -194,11 +194,19 @@ sub _whistogram {
 
     my ( $self, $what ) = @_;
 
-    # explicitly set output piddle so get the correct type.
-    my $result = PDL->zeroes( PDL::double, $self->hbins );
+    # as of (at least) PDL 2.007, the output type from whistogram
+    # depends upon the type of the _index_, not the _weight_.
+    # in the hopes that the latter eventually happens, set the type of
+    # the _index_ to that of the weight.
 
-    $self->idx->whistogram( $what, $result, 1, -1, $self->hbins );
-    return $result;
+    my $index = $self->idx;
+
+    if ( $index->type != $what->type ) {
+	my $convert_func = $what->type->convertfunc;
+	$index = $index->$convert_func
+    }
+
+    return $index->whistogram( $what, 1, -1, $self->hbins );
 }
 
 1;
