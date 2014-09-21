@@ -16,9 +16,6 @@ use PDLx::Bin1D::Histo;
 use PDL::Lite;
 use base 'Test::Class';
 
-
-
-
 # initialize, so can be reused in tests
 
 sub init_piddles : Test( startup => 2 ) {
