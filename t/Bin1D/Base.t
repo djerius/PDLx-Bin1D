@@ -64,7 +64,6 @@ use PDL::Lite;
 
 {
     my $bin_edges = PDL->sequence( 1000 ) / 100;
-    my $data = PDL->sequence( PDL::long, 120 ) / 10 - 1;
 
     # generate some integer data in [-1, 10] and shuffle it around. keeps
     # some of the bins empty.
