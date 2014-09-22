@@ -2,125 +2,142 @@
 
 =for usage
 
-  %hash = bin_adaptive_snr( $signal, [ \%options ]  );
+  %hash = bin_adaptive_snr( %options  );
 
 =for ref
 
-Adaptively bin a data set using errors to achieve minimum signal to
-noise ratios in each bin.
+Adaptively bin a data set to achieve a minimum signal to noise ratio
+in each bin.
 
 This routine ignores data with bad values or with errors that have
 bad values.
 
-B<bin_snr> groups data into bins such that each bin achieves a minimum
-signal to noise ratio (S/N).  The data are typically dependent values
-(e.g. flux as a function of energy or counts as a function of radius).
-The data should be sorted by the independent variable (e.g. energy or
-radius).
+B<bin_adaptive_snr> groups data into bins such that each bin meets
+one or more conditions:
+
+=over
+
+=item *
+
+a minimum signal to noise ratio (S/N).
+
+=item *
+
+A minimum number of data elements (optional).
+
+=item *
+
+A maximum number of data elements (optional).
+
+=item *
+
+A maximum data I<width> (see below) (optional).
+
+=item *
+
+A minimum data I<width> (see below) (optional).
+
+=back
+
+The data are typically dependent values (e.g. flux as a function of
+energy or counts as a function of radius).  The data should be sorted
+by the independent variable (e.g. energy or radius).
+
+Calculation of the S/N requires an estimate of the error associated
+with each datum.  The error may be provided or may be estimated from
+the population using either the number of data elements in a bin
+(e.g. Poisson errors) or the standard deviation of the signal in a bin.
+If errors are provided, they may be used to weight the population standard
+deviaton or may be added in quadrature.
 
 Binning begins at the start of the data vector.  Data are accumulated
-into a bin until the minimum S/N (specified by the B<min_sn> option)
-is met.  The signal is the sum of the data and the noise is the RSS
-error in the bin.  If the final bin has insufficient S/N, it is folded
-into the previous bin.
+into a bin until one or more of the possible criteria is met. If the
+final bin does not meet the required criteria, it may optionally be
+successively folded into preceding bins until the final bin passes the
+criteria or there are no bins left.
 
-The noise is typically provided by the caller as a piddle containing
-errors or squared errors.  It may also be calculated on the fly as either
-the standard deviation of the signal in a bin, or as the Poisson error
-in the number of counts in a bin.
+Each datum may be assigned an extra parameter, its I<width>,
+which is summed for each bin, and can be used as an additional constraint
+on bin membership.
 
-Additional constraints may be placed upon how the data are binned:
+=head3 Parameters
+
+B<bin_adaptive_snr> is passed a hash or a reference to a hash containing
+its parameters.  The available parameters are:
 
 =over
 
-=item *
+=item C<signal>
 
-Number of elements
+A piddle containing the signal data.  This is required.
 
-The minimum and/or maximum number of data elements assigned to a bin
-may be constrained.
+=item C<error>
 
-=item *
+A piddle with the error for signal datum. Optional.
 
-weight
+=item C<width>
 
-Each datum may be assigned an additional weight; the sum of those
-values in a bin may be bounded.
+A piddle with the I<width> of each element of the signal. Optional.
+
+=item C<error_algo>
+
+A string indicating how the error is to be handled or calculated.  It
+may be have one of the following values:
+
+=over
+
+=item * C<poisson>
+
+Poisson errors will be caculated based upon the number of elements in a bin,
+
+  error**2 = N
+
+Any input errors are ignored.
+
+=item * C<sdev>
+
+The error is the population standard deviation of the signal in a bin.
+
+  error**2 = Sum [ ( signal - mean ) **2 ] / ( N - 1 )
+
+If errors are provided, they are used to calculated the weighted population
+standard deviation.
+
+  error**2 = ( Sum [ (signal/error)**2 ] / Sum [ 1/error**2 ] - mean**2 )
+             * N / ( N - 1 )
+
+=item * C<rss>
+
+Errors must be provided; the errors of elements in a bin are added in
+quadrature.
 
 =back
 
+=item C<min_snr>
 
-=head3 Options
+The minimum signal to noise ratio to be achieved in each bin.  Required.
 
-Options are parsed by PDL::Options, so unique abbreviations are accepted.
+=item C<min_nelem>
 
-=over
+=item C<max_nelem>
 
-=item error
+The minimum and/or maximum number of elements to be achieved in each bin. Optional
 
-This may be one of the following:
+=item C<min_width>
 
-=over
+=item C<max_width>
 
-=item *
+The minimum and/or maximum width of the elements to be achieved in each bin. Optional.
 
-a piddle (same dimensions as the signal piddle)
-
-This should contain the error for each element of the signal. If the
-C<error_squared> option is set, this contains the I<square> of the
-error.
-
-=item *
-
-The string C<poisson>, indicating that Poisson errors should be
-calculated, namely
-
-   N / sqrt(N)
-
-where I<N> is the number of data elements placed in a bin.  To treat
-the input signal as counts, and calculate Poisson errors from them,
-set C<error> equal to the signal piddle, and set the C<error_squared>
-option to a true value.
-
-=item *
-
-The string C<sdev>, indicating that the standard deviation of the
-signal in the bin should be used as the error. The standard deviation
-is calculated as
-
-  ( Sum( S**2 ) + ( Sum(S) / N )**2 * ( 1 - 2 N ) ) / ( N - 1 )
-
-where I<S> is the signal in a bin and I<N> is the number of data
-elements placed in the bin.  This may suffer overflow.
-
-=back
-
-=item fold (boolean)
+=item C<fold> I<boolean>
 
 If true, the last bin may be folded into the preceding bin in order to
-ensure that the last bin achieves the requested SNR.  If this is not
-specified, it will be set to true if the C<nmax> or C<wmax> options
-are not set, otherwise it will be false.
+ensure that the last bin meets one or more of the criteria. It defaults to false.
 
-=item nmin (default: 1 )
+=item C<set_bad> I<boolean>
 
-The minimum number of elements per bin
+If true, and bad values are available, 
 
-=item nmax (default: 0 )
-
-The maximum number of elements per bin; set to zero for no limit.
-
-=item wmin (default: 0 )
-
-=item wmax (default: 0 )
-
-The minimum and maximum weight for a bin; set to zero for no limit.
-These options require that the C<weight> option also be set.
-
-=item weight
-
-A piddle containting the "weight" of each datum.  It must have the same
-dimensions as the input data.
 
 =back
 

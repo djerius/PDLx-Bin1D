@@ -30,6 +30,9 @@ use IO::File;
 use constant;
 use File::Basename qw[ fileparse ];
 use File::Spec::Functions qw[ catfile ];
+use Text::Template::LocalVars;
+use Try::Tiny;
+
 
 use constant LIBDIR => ( fileparse( $0 ) )[1];
 
@@ -39,27 +42,25 @@ our $VERSION = '0.01';
 
 use PDL::Types qw[ typefld ];
 
-# newer(?) version of PDL define index types:
+# later versions of PDL define index types:
 #  'PDL_Indx' (as a C typedef) and 'indx' for signatures
 # for backwards compatibility, support long as well as the others
 
-my $IndexParsType   = eval { typefld( 'PDL_IND', 'ppforcetype' ) } || typefld( 'PDL_L', 'ppforcetype' );
+my $IndexParsType = eval { typefld( 'PDL_IND', 'ppforcetype' ) }
+  || typefld( 'PDL_L', 'ppforcetype' );
 
-if ( ! eval { typefld( 'PDL_IND', 'ctype' ) } ) {
-
-    pp_addhdr( "typedef long PDL_Indx;\n" );
-
-}
-
+pp_addhdr( "typedef long PDL_Indx;\n" )
+  if !eval { typefld( 'PDL_IND', 'ctype' ) };
 
 my %CONSTANTS = (
     BIN_SNR => {
-        BIN_SNR_HAVE_ERROR  => 1,
-        BIN_SNR_HAVE_ERROR2 => 2,
-        BIN_SNR_FOLD        => 4,
-        BIN_SNR_HAVE_WIDTH  => 8,
-        BIN_SNR_ERROR_SDEV  => 16,
-	BIN_SNR_SET_BAD     => 32,
+        BIN_SNR_HAVE_ERROR    => 1,
+        BIN_SNR_SET_BAD       => 2,
+        BIN_SNR_FOLD          => 4,
+        BIN_SNR_HAVE_WIDTH    => 8,
+        BIN_SNR_ERROR_SDEV    => 16,
+        BIN_SNR_ERROR_POISSON => 32,
+        BIN_SNR_ERROR_RSS     => 64,
     },
     BIN_RC => {
         BIN_GTMINSN => 16,
@@ -69,7 +70,14 @@ my %CONSTANTS = (
         BIN_OK      => 1,
     } );
 
-my @CONSTANTS = ( map { keys %$_} values %CONSTANTS );
+# convert hash into [key => value] tuples, sorted by group, then value in group
+my @CONSTANTS =
+        map {
+            my $h = $_;
+            map { [ $_, $h->{$_} ] } sort { $h->{$a} <=> $h->{$b} } keys %$h;
+        } values %CONSTANTS;
+
+my @CONSTANT_NAMES = ( map { keys %$_ } values %CONSTANTS );
 my @EXPORT_OK;
 
 sub slurp {
@@ -77,6 +85,44 @@ sub slurp {
     local $/ = undef;
     ( IO::File->new( $file, 'r' ) or die( "can't slurp $file" ) )->getline;
 }
+
+# fill in templates using Text::Template::LocalVars.  This routine
+# is also imported into all of the template fragments.
+sub fill_in {
+
+    my ( $type, $src ) = ( shift, shift );
+
+    $src = catfile( LIBDIR, $src )
+      if lc $type eq 'file' && $src !~ m:^[./]:s;
+
+    my $tpl = Text::Template::LocalVars->new(
+        type       => $type,
+        source     => $src,
+        delimiters => [qw( <% %>  )],
+        broken     => sub { my %args = @_; die $args{error}; },
+        prepend => sprintf( '*fill_in = \*%s::fill_in;', __PACKAGE__ ),
+    );
+
+    die $Text::Template::ERROR unless defined $tpl;
+
+    # by default, localize the variable packages, and insert the last one
+    # in the call chain if not explicitly specified.
+    my %args = ( localize => 1, trackpkgvars => 1, @_ );
+
+    my $txt;
+    try {
+        $txt = $tpl->fill_in( %args );
+        die unless defined $txt;
+    }
+    catch {
+        die defined $Text::Template::LocalVars::ERROR
+          ? $Text::Template::LocalVars::ERROR
+          : $_;
+    };
+
+    return $txt;
+}
+
 
 pp_core_importList( '()' );
 
@@ -134,56 +180,52 @@ pp_addhdr(
         "\n",
         '#include <float.h>',
         '#include <limits.h>',
-        map {
-            my $h = $_;
-            map { sprintf( "#define %s %s", $_, $h->{$_} ); }
-              sort { $h->{$a} <=> $h->{$b} } keys %$h;
-          } values %CONSTANTS
+	 map { "#define $_->[0]\t$_->[1]" } @CONSTANTS
       )
       . "\n"
 );
 
 pp_addpm(
     { At => 'Top' },
-    join "\n",
+    join ( "\n",
     'use constant { ',
-    (
-        map {
-            my $h = $_;
-            map { sprintf( "%s => %s,", $_, $h->{$_} ); }
-              sort { $h->{$a} <=> $h->{$b} } keys %$h;
-          } values %CONSTANTS,
-    ),
-    '};',
+	 ( map { "$_->[0]\t=>\t$_->[1]," } @CONSTANTS ),
+    '};', '' ),
 );
 
-my $c_code = slurp( 'bin_adaptive_snr.c' );
 
 push @EXPORT_OK, 'bin_adaptive_snr';
 pp_def(
     'bin_adaptive_snr',
     Pars => join(
         ';',
-        'signal(n)',        # piddle containing signal to bin
-        'error(n)',         # error piddle if flags && HAVE_ERROR or HAVE_ERROR2
-        'width(n)',         # optional width for each signal datum
-        "$IndexParsType [o] index(n)",   # output index
+        'signal(n)',    # piddle containing signal to bin
+        'error(n)',     # error piddle if flags && HAVE_ERROR or HAVE_ERROR2
+        'width(n)',     # optional width for each signal datum
+        "$IndexParsType [o] index(n)",    # output index
         "$IndexParsType [o] nbins()",
         "$IndexParsType [o] nelem(n)",
         'double [o] b_signal(n)',
-        'double [o] b_width(nwidth)',
-        'double [o] b_error(nerror)',
+        'double [o] b_error(n)',
+        'double [o] b_mean(n)',
         'double [o] b_snr(n)',
+        'double [o] b_width(nwidth)',
         "$IndexParsType [o] ifirst(n)",
         "$IndexParsType [o] ilast(n)",
         'int [o] rc(n)',
-	'double [t] b_signal2(nbsignal2)',
+        'double [t] b_error2(nrss)',
+        'double [t] b_signal2(nsdev)',
+        'double [t] b_m2(nsdev)',
+        'double [t] b_weight(nwsdev)',
+        'double [t] b_weight_sig(nwsdev)',
+        'double [t] b_weight_sig2(nwsdev)',
     ),
     RedoDimsCode => q/
     long n = $PDL(signal)->dims[0];
+    $SIZE(nrss)   = $COMP(optflags) & BIN_SNR_ERROR_RSS  ? n : 0 ;
     $SIZE(nwidth) = $COMP(optflags) & BIN_SNR_HAVE_WIDTH ? n : 0 ;
-    $SIZE(nerror) = $COMP(optflags) & BIN_SNR_HAVE_ERROR | BIN_SNR_ERROR_SDEV ? n : 0 ;
-    $SIZE(nbsignal2) = $COMP(optflags) & BIN_SNR_ERROR_SDEV ? n : 0 ;
+    $SIZE(nsdev)  = $COMP(optflags) & BIN_SNR_ERROR_SDEV ? n : 0 ;
+    $SIZE(nwsdev) = $COMP(optflags) & BIN_SNR_ERROR_SDEV & BIN_SNR_HAVE_ERROR? n : 0 ;
 /,
     OtherPars => join(
         ';',
@@ -195,19 +237,22 @@ pp_def(
         'double min_width',
         'double max_width',
     ),
-    Code      => $c_code,
+    Code => do {
+        my $c = fill_in(
+            file    => 'bin_adaptive_snr.c',
+            package => 'bin_adaptive_snr'
+        );
+        $c;
+    },
     HandleBad => 1,
-    BadCode   => join( "\n",
-        '#undef PDL_BAD_CODE',
-        '#define PDL_BAD_CODE',
-        $c_code,
-        '#undef PDL_BAD_CODE',
-        '' ),
+    BadCode   => fill_in(
+        file    => 'bin_adaptive_snr.c',
+        hash    => { PDL_BAD_CODE => 1 },
+        package => 'bin_adaptive_snr_bad'
+    ),
     PMCode => slurp( 'bin_adaptive_snr.pl' ),
     Doc    => slurp( 'bin_adaptive_snr.pod' ),
 );
-
-
 
 # This is a private copy of  code which will be in a future version
 # of PDL. Don't use it!
@@ -216,17 +261,14 @@ pp_def(
 # return i, s.t. xs[i] <= value < xs[i+1].
 # returns -1 if xs[0] > value
 # returns N-1 if xs[-1] <= value
-pp_def('_vsearch_bin_inclusive',
-       HandleBad => 0,
-       PMFunc => '',
-       BadDoc => 'needs major (?) work to handles bad values',
-       Pars => join( ';',
-		     'i()',
-		     'x(n)',
-		     "$IndexParsType [o]ip()",
-		   ),
-       GenericTypes => ['F','D'], # too restrictive ?
-        Code => q[threadloop %{
+pp_def(
+    '_vsearch_bin_inclusive',
+    HandleBad => 0,
+    PMFunc    => '',
+    BadDoc    => 'needs major (?) work to handles bad values',
+    Pars      => join( ';', 'i()', 'x(n)', "$IndexParsType [o]ip()", ),
+    GenericTypes => [ 'F', 'D' ],    # too restrictive ?
+    Code         => q[threadloop %{
 
                    PDL_Indx n1 = $SIZE(n)-1;
                    PDL_Indx low = 0;
@@ -248,7 +290,7 @@ pp_def('_vsearch_bin_inclusive',
 
                 %}
 ],
-         Doc => undef
+    Doc => undef
 );
 
 
@@ -280,7 +322,7 @@ pp_export_nothing();
 
 pp_addpm(
     { At => 'Top' },
-    qq[\$EXPORT_TAGS{constants} = [ qw(\n@{[ join "\n", @CONSTANTS  ]}\n)];\n]
+    qq[\$EXPORT_TAGS{constants} = [ qw(\n@{[ join "\n", @CONSTANT_NAMES  ]}\n)];\n]
 );
 pp_addpm( { At => 'Top' },
     qq[\$EXPORT_TAGS{Func} = [ qw(\n@{[ join "\n", @EXPORT_OK  ]}\n)];\n] );

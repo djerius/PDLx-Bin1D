@@ -2,13 +2,20 @@
 ## no critic ProhibitAccessOfPrivateData
 
 use Types::Common::Numeric qw[ PositiveNum PositiveInt PositiveOrZeroInt ];
-use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool ];
+use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum ];
 use Type::Params qw[ compile ];
 
 use Carp;
 use PDL::Lite;
 
 my $bin_adaptive_snr_check;
+
+my %MapErrorAlgo = (
+
+    sdev    => BIN_SNR_ERROR_SDEV,
+    rss     => BIN_SNR_ERROR_RSS,
+    poisson => BIN_SNR_ERROR_POISSON,
+);
 
 BEGIN {
 
@@ -17,15 +24,14 @@ BEGIN {
             signal => InstanceOf ['PDL'],
             error  => Optional   [ InstanceOf ['PDL'] ],
             width  => Optional   [ InstanceOf ['PDL'] ],
-            min_snr       => PositiveNum,
-            min_nelem     => Optional [PositiveInt],
-            max_nelem     => Optional [PositiveInt],
-            min_width     => Optional [PositiveNum],
-            max_width     => Optional [PositiveNum],
-            fold          => Optional [Bool],
-            error_squared => Optional [Bool],
-            error_sdev    => Optional [Bool],
-	    set_bad       => Optional [Bool],
+            min_snr    => PositiveNum,
+            min_nelem  => Optional [PositiveInt],
+            max_nelem  => Optional [PositiveInt],
+            min_width  => Optional [PositiveNum],
+            max_width  => Optional [PositiveNum],
+            fold       => Optional [Bool],
+            error_algo => Optional [ Enum [ qw( sdev poisson rss ) ] ],
+            set_bad    => Optional [Bool],
         ] );
 }
 
@@ -35,7 +41,8 @@ sub bin_adaptive_snr {
 
     # specify defaults
     my %opt = (
-        min_nelem => 1,
+        error_algo => 'sdev',
+        min_nelem  => 1,
         %$opts
     );
 
@@ -45,12 +52,8 @@ sub bin_adaptive_snr {
       if ( defined $opt{min_width} || defined $opt{max_width} )
       && !defined $opt{width};
 
-
-    croak( "do not specify error_sdev if error is also specified\n" )
-      if defined $opt{error} && $opt{error_sdev};
-
-    croak( "error_squared specified, but error wasn't" )
-      if $opt{error_squared} && !defined $opt{error};
+    croak( "must specify error attribute if 'rss' errors selected\n" )
+      if !defined $opt{error} && $opt{error_algo} eq 'rss';
 
     $opt{min_width} ||= 0;
     $opt{max_width} ||= 0;
@@ -62,35 +65,33 @@ sub bin_adaptive_snr {
       unless defined $opt{fold};
 
     $opt{flags}
-      = ( ( defined $opt{error} && BIN_SNR_HAVE_ERROR )  || 0 )
-      | ( ( defined $opt{width} && BIN_SNR_HAVE_WIDTH )  || 0 )
-      | ( ( $opt{error_squared} && BIN_SNR_HAVE_ERROR2 ) || 0 )
-      | ( ( $opt{fold}          && BIN_SNR_FOLD )        || 0 )
-      | ( ( $opt{error_sdev}    && BIN_SNR_ERROR_SDEV )  || 0 )
-      | ( ( $opt{set_bad}       && BIN_SNR_SET_BAD )     || 0 )
-      ;
+      = ( ( defined $opt{error} && BIN_SNR_HAVE_ERROR ) || 0 )
+      | ( ( defined $opt{width} && BIN_SNR_HAVE_WIDTH ) || 0 )
+      | ( ( $opt{fold}          && BIN_SNR_FOLD )       || 0 )
+      | ( ( $opt{set_bad}       && BIN_SNR_SET_BAD )    || 0 )
+      | $MapErrorAlgo{ $opt{error_algo} };
 
-
-    my @pin  = qw[ signal error width ];
-    my @pout = qw[ index nbins nelem b_signal b_width b_error b_snr ifirst ilast rc ];
-    my @ptmp = qw[ bsignal2 ];
+    my @pin   = qw[ signal error width ];
+    my @pout  = qw[ index nbins nelem b_signal b_error b_mean b_snr
+		    b_width ifirst ilast rc ];
+    my @ptmp  = qw[ berror2 bsignal2 b_m2 b_weight b_weight_sig b_weight_sig2 ];
     my @oargs = qw[ flags min_snr min_nelem max_nelem min_width max_width ];
 
     # several of the input piddles are optional.  the PP routine
     # doesn't know that and will complain about the wrong number of
-    # dimensions if we pass a null piddle. to side step that, pass in
-    # $signal for them.  $signal isn't touched, and the flags as set
-    # above lets the PP code know which optional piddles are present.
-    $opt{$_} = PDL->new(0)  for grep { !defined $opt{$_} } @pin;
-    $opt{$_} = PDL->null    for grep { !defined $opt{$_} } @pout;
-    $opt{$_} = PDL->null    for grep { !defined $opt{$_} } @ptmp;
+    # dimensions if we pass a null piddle. A 1D zero element piddle
+    # will have its dimensions auto-expanded without much
+    # wasted memory.
+    $opt{$_} = PDL->new( 0 ) for grep { !defined $opt{$_} } @pin;
+    $opt{$_} = PDL->null     for grep { !defined $opt{$_} } @pout;
+    $opt{$_} = PDL->null     for grep { !defined $opt{$_} } @ptmp;
 
     _bin_adaptive_snr_int( @opt{ @pin, @pout, @ptmp, @oargs } );
 
     my %results = map {
         ( my $nkey = $_ ) =~ s/^b_//;
         $nkey, $opt{$_}
-    } @pout ;
+    } @pout;
 
 
     return %results;

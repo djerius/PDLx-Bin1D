@@ -23,14 +23,14 @@ sub signal {
 
 sub error {
 
-    return error => sqrt( random( 1000 ) * 100 );
+    return error => sqrt( random( 1000 ) * 100 ), error_algo => 'rss' ;
 }
 
 srand( 2 );
 
 for my $set (
     [ 'random error' => \&error ],
-    [ 'standard deviation' => sub { error_sdev => 1 } ]
+    [ 'standard deviation' => sub { error_algo => 'sdev' } ]
  )
 {
 

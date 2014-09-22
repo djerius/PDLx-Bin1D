@@ -14,21 +14,23 @@ use POSIX qw[ DBL_MAX ];
 
 use PDLx::Bin1D::XS qw[ bin_adaptive_snr :constants ];
 
+################################################################
+#
+# test that all of the machinery works (apart from the error
+# algorithm)
+#
 # the expected results are based the fact that the signal, and
 # signal/error ratio are constant, so it's easy to calculate
 # the binned results, essentially each bin is independent of
 # which signal is the first in the bin; only the number of
 # signal data points in a bin matters.
 
-##############################################################################################
-# this batch is for explicit errors.
-
 # signal => $signal->cumusumover
 # error => sqrt( ($error**2)->cumusumover )
 # snr => $signal->cumusumover / sqrt( ($error**2)->cumusumover )
 
 
-subtest 'explict errors' => sub {
+subtest 'test machinery' => sub {
 
     my $signal = ones( 10 );
     my $error  = zeros( 10 ) + 0.1;
@@ -48,7 +50,7 @@ subtest 'explict errors' => sub {
         my ( $in, $exp ) = @_;
 
         $in->{$_} = $signal{$_} foreach keys %signal;
-
+	$in->{error_algo} = 'rss';
 	$exp->{$_} = topdl( $exp->{$_} ) for keys %$exp;
 
         my $index = $exp->{nelem} - 1;
@@ -193,194 +195,43 @@ subtest 'explict errors' => sub {
 
 };
 
-##############################################################################################
-# this batch is for errors derived from the signal (sdev).
+############################################################
+# test different error algorithms
 
-# signal => $signal->dcumusumover
-# error =>  sqrt( ( ($signal**2)->dcumusumover  - ( $signal->sequence + 1)  * ($signal->dcumusumover / ( $signal->sequence+1 ) )**2 ) /  $signal->sequence )
+# use max_nelem to constrain the bins to make it easy to
+# calculate things
 
-# this is the expansion of sqrt( Sum( X - mean ) **2  / ( N - 1 ) ) into
-#         sqrt( (Sum( X**2 ) - N * mean**2 ) / ( N - 1 ) )
+subtest 'rss error' => sub {
 
-subtest 'errors from signal' => sub {
+    my %in = ( signal => random(1000),
+	       error  => random(1000) / 10,
+	       error_algo => 'rss',
+	       min_nelem => 10,
+	       max_nelem => 10,
+	       min_snr => 1000,
+	     );
 
-    my $signal = pdl( 1, 2, 4, 3, 1, 2, 4, 3, 1, 2 );
-    my $width = zeros( 10 ) + 0.01;
+    my %exp = ( index  => sequence(PDL::long, 1000) / 10,
+		nelem  => zeroes(100) + 10,
+	      );
 
-    my $mkd = sub {
+    whistogram( $exp{index}, $in{error}**2, ($exp{error} = PDL->null ),
+		1, 0, 100 );
 
-        my ( $nelem, $in, $exp ) = @_;
+    $exp{error}->inplace->sqrt;
+    my %got;
 
-        $nelem = topdl( $nelem );
+    is(
+       exception {
+	 %got = bin_adaptive_snr( %in );
+       }, 
+       undef,
+       "bin signal" )
+      or return;
 
-        my $nbins = $nelem->nelem;
+    my $nbins = delete $got{nbins};
 
-        $in->{signal}     = $signal->zeroes;
-        $in->{error_sdev} = 1;
-
-	$exp->{$_} = topdl( $exp->{$_} ) for keys %$exp;
-
-        $exp->{signal} = zeroes( $nbins );
-        $exp->{error}  = zeroes( $nbins );
-        $exp->{snr}    = zeroes( $nbins );
-        $exp->{nelem}  = $nelem;
-
-
-        my $lidx = 0;
-        for my $idx ( 0 .. $nelem->nelem - 1 ) {
-
-            my $nin    = $nelem->at( $idx );
-            my $ifirst = $lidx;
-            my $ilast  = $lidx + $nin - 1;
-            $lidx = $ilast + 1;
-
-            my $signal = $signal->mslice( [ $ifirst, $ilast ] );
-            $in->{signal}->mslice( [ $ifirst, $ilast ] ) .= $signal;
-
-            my $signal_sum = $signal->dsum;
-            my $mean       = $signal_sum / $nin;
-            my $error
-              = $nin <= 1
-              ? DBL_MAX
-              : sqrt( ( ( $signal - $mean )**2 )->sum / ( $nin - 1 ) );
-            my $snr = $signal_sum / $error;
-
-            $exp->{signal}->set( $idx, $signal->dsum );
-            $exp->{error}->set( $idx, $error );
-            $exp->{snr}->set( $idx, $snr );
-        }
-
-        use Data::Dumper;
-
-        return [ $in, $exp ];
-
-    };
-
-
-    test_explicit( @{$_} ) foreach (
-
-        $mkd->(
-            [ 4, 4, 2 ],
-            {
-                min_snr => 7,
-                fold    => 0,
-            },
-            {
-                rc => [ BIN_OK, BIN_OK, 0 ],
-            },
-        ),
-
-        $mkd->(
-            [ 4, 6 ],
-            {
-                min_snr => 7,
-                fold    => 1,
-            },
-            {
-                rc => [ BIN_OK, BIN_OK | BIN_FOLDED ],
-            },
-        ),
-
-        $mkd->(
-            [ 4, 4, 2 ],
-            {
-                min_snr   => 7,
-                min_width => .04,
-                width     => $width,
-                fold      => 0,
-            },
-            {
-                rc => [ BIN_OK, BIN_OK, 0 ],
-            },
-        ),
-
-        $mkd->(
-            [ 2, 2, 2, 2, 2 ],
-            {
-                min_snr   => 20,
-                min_width => .01,
-                max_width => .02,
-                width     => $width,
-                fold      => 0,
-            },
-            {
-                rc => [ BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX,
-                    BIN_GEWMAX
-                ],
-            },
-        ),
-
-        $mkd->(
-            [ 4, 4, 2 ],
-            {
-                min_snr   => 7,
-                max_width => .04,
-                width     => $width,
-                fold      => 0,
-            },
-            {
-                rc => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_GEWMAX, 0 ],
-            },
-        ),
-
-        $mkd->(
-            [ 4, 6 ],
-            {
-                min_snr   => 7,
-                max_width => .04,
-                width     => $width,
-                fold      => 1,
-            },
-            {
-                rc => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_FOLDED ],
-            },
-        ),
-
-
-        $mkd->(
-            [ 3, 3, 3, 1 ],
-            {
-                min_snr   => 4,
-                min_nelem => 3,
-            },
-            {
-                rc =>
-                  [ BIN_OK | BIN_GTMINSN, BIN_OK, BIN_OK | BIN_GTMINSN, 0 ],
-            },
-        ),
-
-        $mkd->(
-            [ 4, 4, 2 ],
-            {
-                min_snr   => 8,
-                min_nelem => 3,
-                max_nelem => 4,
-            },
-            {
-                rc => [ BIN_GENMAX, BIN_GENMAX, 0 ],
-            },
-        ),
-
-        $mkd->(
-            [ 3, 3, 3, 1 ],
-            {
-                min_snr   => 1,
-                min_nelem => 3,
-                max_nelem => 4,
-            },
-            {
-                rc => [
-                    BIN_OK | BIN_GTMINSN,
-                    BIN_OK | BIN_GTMINSN,
-                    BIN_OK | BIN_GTMINSN,
-                    0
-                ],
-            },
-        ),
-
-
-    );
-
+    is_pdl( $got{error}->mslice([0,$nbins-1]),  $exp{error}, 'error' );
 
 };
 
