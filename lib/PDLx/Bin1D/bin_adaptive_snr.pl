@@ -23,7 +23,7 @@ BEGIN {
             min_width  => Optional [PositiveNum],
             max_width  => Optional [PositiveNum],
             fold       => Optional [Bool],
-            error_algo => Optional [ Enum [ qw( sdev poisson rss ) ] ],
+            error_algo => Optional [ Enum [ keys %MapErrorAlgo ] ],
             set_bad    => Optional [Bool],
         ] );
 }

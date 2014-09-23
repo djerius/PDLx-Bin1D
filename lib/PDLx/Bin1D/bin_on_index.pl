@@ -19,7 +19,7 @@ BEGIN {
             signal => InstanceOf ['PDL'],
             nbins  => InstanceOf ['PDL'] | PositiveInt,
             error  => Optional   [ InstanceOf ['PDL'] | Undef ],
-            error_algo => Optional [ Enum [ qw( sdev poisson rss ) ] ],
+            error_algo => Optional [ Enum [ keys %MapErrorAlgo ] ],
         ] );
 }
 
