@@ -22,7 +22,7 @@ my @bin_counters = do {
       qw[ double   bweight_sig2 ]  => 'sum of weight * signal**2',
       qw[ int      bad_error    ]  => 'if error2 is not good',
       qw[ int      lastrc       ]  => 'carryover status from previous loop',
-      qw[ PDL_Indx nin          ]  => 'number of elements in the current bin',
+      ( '<%$PDL_Indx%>',  'nin' )  => 'number of elements in the current bin',
       # >>>
 
       ;
@@ -30,17 +30,18 @@ my @bin_counters = do {
 
 sub declare_bin_counters {
 
-    join( "\n",
+  fill_in_string( join( "\n",
         '/* Declare bin counters */',
 	  map { sprintf( "%s\t%s = 0;\t/* %s */", @{$_}{qw/ type var comment /} ) } @bin_counters,
-    );
+			   ) );
 }
 
 sub reset_bin_counters {
-    join( "\n",
+
+  fill_in_string(  join( "\n",
         '/* Reset bin counters */',
         map { "$_->{var} = 0;" } @bin_counters,
-    );
+			   )    );
 }
 
 sub sdev_algo {
@@ -359,8 +360,8 @@ int error_rss     = flags & BIN_ARG_ERROR_RSS;
 int fold_last_bin = flags & BIN_ARG_FOLD;
 int set_bad       = flags & BIN_ARG_SET_BAD;
 
-PDL_Indx   min_nelem    = $COMP(min_nelem);
-PDL_Indx   max_nelem    = $COMP(max_nelem);
+<% $PDL_Indx %>   min_nelem    = $COMP(min_nelem);
+<% $PDL_Indx %>   max_nelem    = $COMP(max_nelem);
 double     max_width    = $COMP(max_width);
 double     min_width    = $COMP(min_width);
 double     min_snr      = $COMP(min_snr);
@@ -376,9 +377,9 @@ if ( max_nelem == 0 )
 
 threadloop %{
 
-  PDL_Indx curind = 0;         /* index of current bin */
+  <% $PDL_Indx %> curind = 0;         /* index of current bin */
 
-  <% declare_bin_counters() %>
+  <%  declare_bin_counters(); %>
 
   loop(n) %{
 
@@ -454,7 +455,7 @@ threadloop %{
   if ( nin ) {
 
     /* needed for SET_RESULTS */
-    PDL_Indx n = $SIZE(n) - 1;
+    <% $PDL_Indx %> n = $SIZE(n) - 1;
 
     rc = 0;
     bad_error = 0;
@@ -467,12 +468,12 @@ threadloop %{
     if ( fold_last_bin && curind > 0 )
       {
 
-        PDL_Indx ni;
+        <% $PDL_Indx %> ni;
         while ( --curind > 0  )
           {
             double tmp;
             int snr_ok = 0;
-            PDL_Indx nin_last = nin;
+            <% $PDL_Indx %> nin_last = nin;
 
             <% error_calc(
                         phase           => 'fold',
@@ -494,7 +495,7 @@ threadloop %{
           }
 
         /* fix up index for events initially stuck in folded bins */
-        PDL_Indx curind1 = curind+1;
+        <% $PDL_Indx %> curind1 = curind+1;
         for (ni = $ifirst( n => curind1 ) ; ni < $SIZE(n) ; ni++ ) {
 #ifdef PDL_BAD_CODE
             if ( $ISGOOD(index(n => ni)) )

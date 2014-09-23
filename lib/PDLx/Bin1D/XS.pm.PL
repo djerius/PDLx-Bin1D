@@ -49,8 +49,7 @@ use PDL::Types qw[ typefld ];
 my $IndexParsType = eval { typefld( 'PDL_IND', 'ppforcetype' ) }
   || typefld( 'PDL_L', 'ppforcetype' );
 
-pp_addhdr( "typedef long PDL_Indx;\n" )
-  if !eval { typefld( 'PDL_IND', 'ctype' ) };
+my $IndexCType = eval { typefld( 'PDL_IND', 'ctype' ) } ? 'PDL_Indx' : 'long';
 
 my %CONSTANTS = (
     BIN_ARG => {
@@ -86,6 +85,21 @@ sub slurp {
     ( IO::File->new( $file, 'r' ) or die( "can't slurp $file" ) )->getline;
 }
 
+# this code must be compiled in the template variable package
+sub init_fill_package {
+
+    Text::Template::LocalVars->new(
+        type       => 'string',
+        delimiters => [qw( <% %>  )],
+        source     => q[
+             *fill_in             = \&<% $PACKAGE %>::fill_in;
+             *fill_in_string      = \&<% $PACKAGE %>::fill_in_string;
+           ],
+    )->fill_in( hash => { PACKAGE => __PACKAGE__ } );
+
+}
+
+
 # fill in templates using Text::Template::LocalVars.  This routine
 # is also imported into all of the template fragments.
 sub fill_in {
@@ -100,7 +114,7 @@ sub fill_in {
         source     => $src,
         delimiters => [qw( <% %>  )],
         broken     => sub { my %args = @_; die $args{error}; },
-        prepend => sprintf( '*fill_in = \*%s::fill_in;', __PACKAGE__ ),
+        prepend    => init_fill_package(),
     );
 
     die $Text::Template::ERROR unless defined $tpl;
@@ -108,6 +122,9 @@ sub fill_in {
     # by default, localize the variable packages, and insert the last one
     # in the call chain if not explicitly specified.
     my %args = ( localize => 1, trackpkgvars => 1, @_ );
+
+    my $hash = $args{hash} ||= {};
+    $hash->{PDL_Indx} = $IndexCType;
 
     my $txt;
     try {
@@ -121,6 +138,13 @@ sub fill_in {
     };
 
     return $txt;
+}
+
+sub fill_in_string {
+
+  unshift @_, 'string';
+  goto \&fill_in;
+
 }
 
 
@@ -232,8 +256,8 @@ pp_def(
         'unsigned long optflags'
         ,    # can't call it flags; clashes with PDL internals
         'double min_snr',
-        "$IndexParsType min_nelem",
-        "$IndexParsType max_nelem",
+        '<% $PDL_Indx %> min_nelem',
+        '<% $PDL_Indx %> max_nelem',
         'double min_width',
         'double max_width',
     ),
@@ -268,12 +292,13 @@ pp_def(
     BadDoc    => 'needs major (?) work to handles bad values',
     Pars      => join( ';', 'i()', 'x(n)', "$IndexParsType [o]ip()", ),
     GenericTypes => [ 'F', 'D' ],    # too restrictive ?
-    Code         => q[threadloop %{
+    Code         => fill_in_string(
+		 q[threadloop %{
 
-                   PDL_Indx n1 = $SIZE(n)-1;
-                   PDL_Indx low = 0;
-                   PDL_Indx high = n1;
-                   PDL_Indx mid;
+                   <% $PDL_Indx %> n1 = $SIZE(n)-1;
+                   <% $PDL_Indx %> low = 0;
+                   <% $PDL_Indx %> high = n1;
+                   <% $PDL_Indx %> mid;
 
 		   $GENERIC() value = $i();
 
@@ -289,7 +314,7 @@ pp_def(
                    $ip() = up ? high: low;
 
                 %}
-],
+]),
     Doc => undef
 );
 
