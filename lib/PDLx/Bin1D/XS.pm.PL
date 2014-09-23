@@ -224,16 +224,11 @@ PDLx::Bin1D::XS - specialized one dimensional binning functions
 =head1 SYNOPSIS
 
   use PDL;
-  use PDLx::Bin1D;
+  use PDLx::Bin1D::XS;
 
 =head1 DESCRIPTION
 
-This module provides various data binning functions.  This module is
-a test bed for future inclusion in a PDL::Bin class.
-
 All functions are made available in the B<PDLx::Bin1D::XS> namespace.
-
-=head1 FUNCTIONS
 
 =cut
 EOD
@@ -305,7 +300,7 @@ pp_def(
         hash    => { PDL_BAD_CODE => 1 },
     ),
     PMCode => slurp( 'bin_adaptive_snr.pl' ),
-    Doc    => slurp( 'bin_adaptive_snr.pod' ),
+    Doc    => undef,
 );
 
 
@@ -353,7 +348,7 @@ pp_def(
         hash    => { PDL_BAD_CODE => 1 },
     ),
     PMCode => slurp( 'bin_on_index.pl' ),
-    #    Doc       => slurp( 'bin_on_index.pod' ),
+    Doc    => undef,
 );
 
 
@@ -412,7 +407,7 @@ Diab Jerius, E<lt>djerius@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 20014 Smithsonian Astrophysical Observatory
+Copyright 2014 Smithsonian Astrophysical Observatory
 
 This software is released under the GNU General Public License.  You
 may find a copy at

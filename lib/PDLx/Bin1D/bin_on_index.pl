@@ -86,3 +86,143 @@ sub bin_on_index {
     return %results;
 }
 
+
+=pod
+
+=head2 bin_on_index
+
+=for usage
+
+  %hash = bin_on_index( %pars  );
+
+=for ref
+
+Bin data and optional errors using an existing piddle which provides
+the bin index for each datum.
+
+This routine ignores data with bad values or with errors that have
+bad values.
+
+=head3 Parameters
+
+B<bin_on_index> is passed a hash or a reference to a hash containing
+its parameters.  The available parameters are:
+
+=over
+
+=item C<index> I<piddle>
+
+The bin index. Valid bins indices range from C<0> to C<nbins - 1>.
+The index may be offset using the C<offset> parameter.  The
+C<oob_algo> parameter specifies how out-of-bounds indices are handled.
+
+=item C<nbins>  I<integer|piddle>
+
+The number of bins, including any used for out-of-bound data.
+
+=item C<signal>
+
+A piddle containing the signal data.  This is optional.  If not
+specified, each datum is given a value of C<1>.
+
+=item C<error>
+
+A piddle with the error for signal datum. Optional.
+
+=item C<error_algo>
+
+A string indicating how the error is to be handled or calculated.  It
+may be have one of the following values:
+
+=over
+
+=item * C<poisson>
+
+Poisson errors will be caculated based upon the number of elements in a bin,
+
+  error**2 = N
+
+Any input errors are ignored.
+
+=item * C<sdev>
+
+The error is the population standard deviation of the signal in a bin.
+
+  error**2 = Sum [ ( signal - mean ) **2 ] / ( N - 1 )
+
+If errors are provided, they are used to calculated the weighted population
+standard deviation.
+
+  error**2 = ( Sum [ (signal/error)**2 ] / Sum [ 1/error**2 ] - mean**2 )
+             * N / ( N - 1 )
+
+=item * C<rss>
+
+Errors must be provided; the errors of elements in a bin are added in
+quadrature.
+
+=back
+
+The default value depends upon which data are available:
+
+  signal   error   default
+  ------   -----   -------
+     Y       Y       sdev
+     Y       N       sdev
+     N       Y       rss
+     N       N       poisson
+
+
+=item C<offset> I<integer>
+
+An offset to be added to the index.  This is useful for transforming
+input index values so that they lie within C<[0,nbins-1]>  For example,
+if indices for in-bounds data range from I<0> to I<N>, and the input
+indices use I<-1> and I<N+1> to indicate data are out-of-bounds,
+then setting C<nbins> to I<N+2> and C<offset> to C<0> will accumulate
+the out-of-bounds data into bins with indices C<0> and C<N+1>
+
+This defaults to C<0>.
+
+=item C<oob_algo> [C<clip>|C<peg>]
+
+If an input index (after addition of C<offset> ) is less than I<0>
+or greater than I<nbins-1>, it is out-of-bounds and cannot be used.  If
+C<oob_algo> is C<clip>, those data are ignored.
+
+If C<oob_algo> is C<peg> then indices less than C<0> are set to C<0>
+and indices greater than C<nbins-1> are set to C<nbins-1>.  This is
+most often used in conjunction with C<offset> set to C<1> to
+make the first and last bins contain the out-of-bound data.
+
+
+=back
+
+
+=head3 Results
+
+B<bin_on_index> returns a hash with the following entries:
+
+=over
+
+=item C<signal>
+
+A piddle containing the sum of the signal in each bin.
+
+=item C<nelem>
+
+A piddle containing the number of data elements in each bin.
+
+=item C<error>
+
+A piddle containing the errors in each bin, calculated using the
+algorithm specified via C<error_algo>.
+
+=item C<mean>
+
+A piddle containing the possibly weighted mean of the signal in each
+bin.
+
+=back
+
+=cut
