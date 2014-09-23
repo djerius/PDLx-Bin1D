@@ -19,7 +19,7 @@ my $build = Module::Build->new(
 
     needs_compiler => 1,
 
-    include_dirs => do { my $_ = PDL_INCLUDE; s/-I//g; $_; },
+    include_dirs => do { (my $inc = PDL_INCLUDE) =~ s/-I//g; $inc; },
 
 );
 
