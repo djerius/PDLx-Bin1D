@@ -207,7 +207,7 @@ sub test_internals {
     my @mskd = qw( rc signal error nelem width ifirst ilast );
 
     ( $c_sn, $c_snl, @mskd{@mskd} )
-      = where( $c_sn, $c_snl, @got{@mskd}, $got{rc} == BIN_OK );
+      = where( $c_sn, $c_snl, @got{@mskd}, $got{rc} == BIN_RC_OK );
 
     # make sure that the minimum possible S/N was actually returned
     # recall that $msn is calculated using one fewer input bins, so that
@@ -247,10 +247,10 @@ sub test_internals {
     {
         my $rc = zeroes( byte, $nbins );
 
-        $rc->where( $got{nelem} >= $in{max_nelem} ) |= BIN_GENMAX
+        $rc->where( $got{nelem} >= $in{max_nelem} ) |= BIN_RC_GENMAX
           if defined $in{max_nelem};
 
-        $rc->where( $got{width} >= $in{max_width} ) |= BIN_GEWMAX
+        $rc->where( $got{width} >= $in{max_width} ) |= BIN_RC_GEWMAX
           if defined $in{max_width};
 
         my $bin_ok = $rc->ones;
@@ -264,10 +264,10 @@ sub test_internals {
         $bin_ok &= $got{width} >= $in{min_width}
           if defined $in{width};
 
-        $rc->where( $bin_ok ) |= BIN_OK;
+        $rc->where( $bin_ok ) |= BIN_RC_OK;
 
         # can't easily test if the last bin is folded, so don't foldedness.
-        is_pdl( $got{rc} & ~pdl( long, BIN_FOLDED ), $rc, "$testid: rc" );
+        is_pdl( $got{rc} & ~pdl( long, BIN_RC_FOLDED ), $rc, "$testid: rc" );
     }
 
 

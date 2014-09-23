@@ -12,9 +12,9 @@ my $bin_adaptive_snr_check;
 
 my %MapErrorAlgo = (
 
-    sdev    => BIN_SNR_ERROR_SDEV,
-    rss     => BIN_SNR_ERROR_RSS,
-    poisson => BIN_SNR_ERROR_POISSON,
+    sdev    => BIN_ARG_ERROR_SDEV,
+    rss     => BIN_ARG_ERROR_RSS,
+    poisson => BIN_ARG_ERROR_POISSON,
 );
 
 BEGIN {
@@ -65,10 +65,10 @@ sub bin_adaptive_snr {
       unless defined $opt{fold};
 
     $opt{flags}
-      = ( ( defined $opt{error} && BIN_SNR_HAVE_ERROR ) || 0 )
-      | ( ( defined $opt{width} && BIN_SNR_HAVE_WIDTH ) || 0 )
-      | ( ( $opt{fold}          && BIN_SNR_FOLD )       || 0 )
-      | ( ( $opt{set_bad}       && BIN_SNR_SET_BAD )    || 0 )
+      = ( ( defined $opt{error} && BIN_ARG_HAVE_ERROR ) || 0 )
+      | ( ( defined $opt{width} && BIN_ARG_HAVE_WIDTH ) || 0 )
+      | ( ( $opt{fold}          && BIN_ARG_FOLD )       || 0 )
+      | ( ( $opt{set_bad}       && BIN_ARG_SET_BAD )    || 0 )
       | $MapErrorAlgo{ $opt{error_algo} };
 
     my @pin   = qw[ signal error width ];

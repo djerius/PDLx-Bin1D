@@ -53,21 +53,21 @@ pp_addhdr( "typedef long PDL_Indx;\n" )
   if !eval { typefld( 'PDL_IND', 'ctype' ) };
 
 my %CONSTANTS = (
-    BIN_SNR => {
-        BIN_SNR_HAVE_ERROR    => 1,
-        BIN_SNR_SET_BAD       => 2,
-        BIN_SNR_FOLD          => 4,
-        BIN_SNR_HAVE_WIDTH    => 8,
-        BIN_SNR_ERROR_SDEV    => 16,
-        BIN_SNR_ERROR_POISSON => 32,
-        BIN_SNR_ERROR_RSS     => 64,
+    BIN_ARG => {
+        BIN_ARG_HAVE_ERROR    => 1,
+        BIN_ARG_SET_BAD       => 2,
+        BIN_ARG_FOLD          => 4,
+        BIN_ARG_HAVE_WIDTH    => 8,
+        BIN_ARG_ERROR_SDEV    => 16,
+        BIN_ARG_ERROR_POISSON => 32,
+        BIN_ARG_ERROR_RSS     => 64,
     },
     BIN_RC => {
-        BIN_GTMINSN => 16,
-        BIN_FOLDED  => 8,
-        BIN_GENMAX  => 4,
-        BIN_GEWMAX  => 2,
-        BIN_OK      => 1,
+        BIN_RC_GTMINSN => 16,
+        BIN_RC_FOLDED  => 8,
+        BIN_RC_GENMAX  => 4,
+        BIN_RC_GEWMAX  => 2,
+        BIN_RC_OK      => 1,
     } );
 
 # convert hash into [key => value] tuples, sorted by group, then value in group
@@ -220,14 +220,14 @@ pp_def(
         'double [t] b_weight_sig(nwsdev)',
         'double [t] b_weight_sig2(nwsdev)',
     ),
-    RedoDimsCode => q/
-    long n = $PDL(signal)->dims[0];
-    $SIZE(nrss)   = $COMP(optflags) & BIN_SNR_ERROR_RSS  ? n : 0 ;
-    $SIZE(nwidth) = $COMP(optflags) & BIN_SNR_HAVE_WIDTH ? n : 0 ;
-    $SIZE(nsdev)  = $COMP(optflags) & BIN_SNR_ERROR_SDEV ? n : 0 ;
-    $SIZE(nwsdev) = $COMP(optflags) & BIN_SNR_ERROR_SDEV & BIN_SNR_HAVE_ERROR? n : 0 ;
-/,
-    OtherPars => join(
+    RedoDimsCode => fill_in_string( q/
+    <% $PDL_Indx %> n = $PDL(signal)->dims[0];
+    $SIZE(nrss)   = $COMP(optflags) & BIN_ARG_ERROR_RSS  ? n : 0 ;
+    $SIZE(nwidth) = $COMP(optflags) & BIN_ARG_HAVE_WIDTH ? n : 0 ;
+    $SIZE(nsdev)  = $COMP(optflags) & BIN_ARG_ERROR_SDEV ? n : 0 ;
+    $SIZE(nwsdev) = $COMP(optflags) & BIN_ARG_ERROR_SDEV & BIN_ARG_HAVE_ERROR? n : 0 ;
+/),
+    OtherPars => fill_in_string( join(
         ';',
         'unsigned long optflags'
         ,    # can't call it flags; clashes with PDL internals

@@ -326,13 +326,13 @@ sub set_results {
 sub set_rc {
     q[
 	  rc |=                                               \
-	    (   nin     >= max_nelem  ? BIN_GENMAX : 0 )      \
+	    (   nin     >= max_nelem  ? BIN_RC_GENMAX : 0 )      \
 	    |                                                 \
-	    (   bwidth  >= max_width  ? BIN_GEWMAX : 0 )      \
+	    (   bwidth  >= max_width  ? BIN_RC_GEWMAX : 0 )      \
 	    |                                                 \
 	    (    nin    >= min_nelem                          \
 		 && bwidth >= min_width                       \
-		 && snr_ok            ? BIN_OK     : 0 )      \
+		 && snr_ok            ? BIN_RC_OK     : 0 )      \
 	    ;                                                 \
       ]
 }
@@ -351,13 +351,13 @@ $sdev_algo = 'incremental';
 
 int flags = $COMP(optflags);
 
-int have_width    = flags & BIN_SNR_HAVE_WIDTH;
-int have_error    = flags & BIN_SNR_HAVE_ERROR;
-int error_sdev    = flags & BIN_SNR_ERROR_SDEV;
-int error_poisson = flags & BIN_SNR_ERROR_POISSON;
-int error_rss     = flags & BIN_SNR_ERROR_RSS;
-int fold_last_bin = flags & BIN_SNR_FOLD;
-int set_bad       = flags & BIN_SNR_SET_BAD;
+int have_width    = flags & BIN_ARG_HAVE_WIDTH;
+int have_error    = flags & BIN_ARG_HAVE_ERROR;
+int error_sdev    = flags & BIN_ARG_ERROR_SDEV;
+int error_poisson = flags & BIN_ARG_ERROR_POISSON;
+int error_rss     = flags & BIN_ARG_ERROR_RSS;
+int fold_last_bin = flags & BIN_ARG_FOLD;
+int set_bad       = flags & BIN_ARG_SET_BAD;
 
 PDL_Indx   min_nelem    = $COMP(min_nelem);
 PDL_Indx   max_nelem    = $COMP(max_nelem);
@@ -441,7 +441,7 @@ threadloop %{
       }
 
     else if ( snr_ok ) {
-      lastrc = BIN_GTMINSN;
+      lastrc = BIN_RC_GTMINSN;
     }
 
     else {
@@ -502,7 +502,7 @@ threadloop %{
               $index( n => ni ) = curind;
         }
         $ilast( n => curind ) = n;
-        rc |= BIN_FOLDED;
+        rc |= BIN_RC_FOLDED;
       }
 
     <% set_results() %>

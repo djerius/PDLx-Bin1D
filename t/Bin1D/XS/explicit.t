@@ -68,9 +68,12 @@ subtest 'test machinery' => sub {
                 fold    => 0,
             },
             {
-                signal => [ 4,      4,      2 ],
-                nelem  => [ 4,      4,      2 ],
-                rc     => [ BIN_OK, BIN_OK, 0 ],
+                signal => [ 4, 4, 2 ],
+                nelem  => [ 4, 4, 2 ],
+                rc     => [ BIN_RC_OK,
+			    BIN_RC_OK,
+			    0,
+			  ],
             },
         ),
 
@@ -80,9 +83,11 @@ subtest 'test machinery' => sub {
                 fold    => 1,
             },
             {
-                signal => [ 4,      6 ],
-                nelem  => [ 4,      6 ],
-                rc     => [ BIN_OK, BIN_FOLDED | BIN_OK ],
+                signal => [ 4, 6 ],
+                nelem  => [ 4, 6 ],
+                rc     => [ BIN_RC_OK,
+			    BIN_RC_FOLDED | BIN_RC_OK,
+			  ],
             },
         ),
 
@@ -93,9 +98,12 @@ subtest 'test machinery' => sub {
                 width     => $width,
             },
             {
-                signal => [ 4,      4,      2 ],
-                nelem  => [ 4,      4,      2 ],
-                rc     => [ BIN_OK, BIN_OK, 0 ],
+                signal => [ 4, 4, 2 ],
+                nelem  => [ 4, 4, 2 ],
+                rc     => [ BIN_RC_OK,
+			    BIN_RC_OK,
+			    0,
+			  ],
             },
         ),
 
@@ -109,9 +117,12 @@ subtest 'test machinery' => sub {
             {
                 signal => [ 2, 2, 2, 2, 2 ],
                 nelem  => [ 2, 2, 2, 2, 2 ],
-                rc => [ BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX, BIN_GEWMAX,
-                    BIN_GEWMAX
-                ],
+                rc     => [ BIN_RC_GEWMAX,
+			    BIN_RC_GEWMAX,
+			    BIN_RC_GEWMAX,
+			    BIN_RC_GEWMAX,
+			    BIN_RC_GEWMAX,
+			  ],
             },
         ),
 
@@ -121,9 +132,12 @@ subtest 'test machinery' => sub {
                 width     => $width,
             },
             {
-                signal => [ 4,                   4,                   2 ],
-                nelem  => [ 4,                   4,                   2 ],
-                rc     => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_GEWMAX, 0 ],
+                signal => [ 4, 4, 2 ],
+                nelem  => [ 4, 4, 2 ],
+                rc     => [ BIN_RC_OK | BIN_RC_GEWMAX,
+			    BIN_RC_OK | BIN_RC_GEWMAX,
+			    0,
+			  ],
             },
         ),
 
@@ -134,9 +148,11 @@ subtest 'test machinery' => sub {
                 width     => $width,
             },
             {
-                signal => [ 4,                   6 ],
-                nelem  => [ 4,                   6 ],
-                rc     => [ BIN_OK | BIN_GEWMAX, BIN_OK | BIN_FOLDED, ],
+                signal => [ 4, 6 ],
+                nelem  => [ 4, 6 ],
+                rc     => [ BIN_RC_OK | BIN_RC_GEWMAX,
+			    BIN_RC_OK | BIN_RC_FOLDED,
+			  ],
             },
         ),
 
@@ -145,9 +161,13 @@ subtest 'test machinery' => sub {
                 min_nelem => 3,
             },
             {
-                signal => [ 3,      3,      3,      1 ],
-                nelem  => [ 3,      3,      3,      1 ],
-                rc     => [ BIN_OK, BIN_OK, BIN_OK, 0 ],
+                signal => [ 3, 3, 3, 1 ],
+                nelem  => [ 3, 3, 3, 1 ],
+                rc     => [ BIN_RC_OK,
+			    BIN_RC_OK,
+			    BIN_RC_OK,
+			    0,
+			  ],
             },
         ),
 
@@ -156,9 +176,13 @@ subtest 'test machinery' => sub {
                 max_nelem => 3,
             },
             {
-                signal => [ 3,          3,          3,          1 ],
-                nelem  => [ 3,          3,          3,          1 ],
-                rc     => [ BIN_GENMAX, BIN_GENMAX, BIN_GENMAX, 0 ],
+                signal => [ 3, 3, 3, 1 ],
+                nelem  => [ 3, 3, 3, 1 ],
+                rc     => [ BIN_RC_GENMAX,
+			    BIN_RC_GENMAX,
+			    BIN_RC_GENMAX,
+			    0,
+			  ],
             },
         ),
 
@@ -168,9 +192,12 @@ subtest 'test machinery' => sub {
                 max_nelem => 4,
             },
             {
-                signal => [ 4,          4,          2 ],
-                nelem  => [ 4,          4,          2 ],
-                rc     => [ BIN_GENMAX, BIN_GENMAX, 0 ],
+                signal => [ 4, 4, 2 ],
+                nelem  => [ 4, 4, 2 ],
+                rc     => [ BIN_RC_GENMAX,
+			    BIN_RC_GENMAX,
+			    0,
+			  ],
             },
         ),
 
@@ -183,10 +210,10 @@ subtest 'test machinery' => sub {
                 signal => [ 3, 3, 3, 1 ],
                 nelem  => [ 3, 3, 3, 1 ],
                 rc     => [
-                    BIN_OK | BIN_GTMINSN,
-                    BIN_OK | BIN_GTMINSN,
-                    BIN_OK | BIN_GTMINSN,
-                    0
+                    BIN_RC_OK | BIN_RC_GTMINSN,
+                    BIN_RC_OK | BIN_RC_GTMINSN,
+                    BIN_RC_OK | BIN_RC_GTMINSN,
+                    0,
                 ],
             },
         ),
