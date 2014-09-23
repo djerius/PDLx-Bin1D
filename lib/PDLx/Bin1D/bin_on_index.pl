@@ -2,7 +2,6 @@
 ## no critic ProhibitAccessOfPrivateData
 
 use Types::Common::Numeric qw[ PositiveNum PositiveInt PositiveOrZeroInt ];
-use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Undef ];
 use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Undef Int ];
 use Type::Params qw[ compile ];
 
@@ -20,8 +19,8 @@ BEGIN {
             signal     => Optional   [ InstanceOf ['PDL'] ],
             nbins      => InstanceOf ['PDL'] | PositiveInt,
             error      => Optional   [ InstanceOf ['PDL'] | Undef ],
-            error_algo => Optional   [ Enum [ keys %MapErrorAlgo ] ],
-            oob_algo   => Optional   [ Enum [ keys %MapOOBAlgo ] ],
+            error_algo => Optional   [ Enum [ keys %MapErrorAlgo ] | Undef ],
+            oob_algo   => Optional   [ Enum [ keys %MapOOBAlgo ] | Undef ],
             offset     => Optional   [Int],
         ] );
 }
@@ -32,11 +31,17 @@ sub bin_on_index {
 
     # specify defaults
     my %opt = (
-        error_algo => 'sdev',
-        oob_algo => 'clip',
         offset     => 0,
         %$opts
     );
+
+    $opt{error_algo} ||=
+        defined $opt{signal} && defined $opt{error} ? 'sdev'
+      : defined $opt{signal}                        ? 'sdev'
+      : defined $opt{error}                         ? 'rss'
+      :                                               'poisson';
+
+    $opt{oob_algo} ||= 'clip';
 
     croak( "must specify error attribute if 'rss' errors selected\n" )
       if !defined $opt{error} && $opt{error_algo} eq 'rss';
