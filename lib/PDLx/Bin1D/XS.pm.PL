@@ -160,6 +160,24 @@ our @EXPORT_OK;
 our %EXPORT_TAGS;
 EOD
 
+pp_addpm(
+    { At => 'Top' },
+    join ( "\n",
+    'use constant { ',
+	 ( map { "$_->[0]\t=>\t$_->[1]," } @CONSTANTS ),
+    '};', '' ),
+);
+
+
+pp_addpm( { At => 'Top' }, <<'EOD' );
+my %MapErrorAlgo = (
+
+    sdev    => BIN_ARG_ERROR_SDEV,
+    rss     => BIN_ARG_ERROR_RSS,
+    poisson => BIN_ARG_ERROR_POISSON,
+);
+EOD
+
 pp_addpm( { At => 'Top' }, <<"EOD" );
 BEGIN{ our \$VERSION = '$VERSION' };
 EOD
@@ -209,14 +227,6 @@ pp_addhdr(
       . "\n"
 );
 
-pp_addpm(
-    { At => 'Top' },
-    join ( "\n",
-    'use constant { ',
-	 ( map { "$_->[0]\t=>\t$_->[1]," } @CONSTANTS ),
-    '};', '' ),
-);
-
 
 push @EXPORT_OK, 'bin_adaptive_snr';
 pp_def(
@@ -260,23 +270,62 @@ pp_def(
         '<% $PDL_Indx %> max_nelem',
         'double min_width',
         'double max_width',
-    ),
-    Code => do {
-        my $c = fill_in(
+    ) ),
+    Code => fill_in(
             file    => 'bin_adaptive_snr.c',
             package => 'bin_adaptive_snr'
-        );
-        $c;
-    },
+        ),
     HandleBad => 1,
     BadCode   => fill_in(
         file    => 'bin_adaptive_snr.c',
+        package => 'bin_adaptive_snr_bad',
         hash    => { PDL_BAD_CODE => 1 },
-        package => 'bin_adaptive_snr_bad'
     ),
     PMCode => slurp( 'bin_adaptive_snr.pl' ),
     Doc    => slurp( 'bin_adaptive_snr.pod' ),
 );
+
+
+push @EXPORT_OK, 'bin_on_index';
+pp_def(
+    'bin_on_index',
+    Pars => join(
+        ';',
+        'signal(n)',    # piddle containing signal to bin
+        "$IndexParsType index(n)",    # input index
+        'error(n)',     # error piddle if flags && HAVE_ERROR
+        "$IndexParsType nbins()",
+        "$IndexParsType [o] nelem(nb)",
+        'double [o] b_signal(nb)',
+        'double [o] b_error(nb)',
+        'double [o] b_mean(nb)',
+        'double [t] b_error2(nb)',
+        'double [t] b_m2(nb)',
+        'double [t] b_weight(nb)',
+    ),
+    RedoDimsCode => q/
+    $SIZE(nb) = $COMP(maxnbins);
+/,
+    OtherPars => fill_in_string(  join(
+        ';',
+        'unsigned long optflags',   # can't call it flags; clashes with PDL internals
+	'<% $PDL_Indx %> maxnbins', #  maximum number of bins
+    )),
+    Code => fill_in(
+            file    => 'bin_on_index.c',
+            package => 'bin_on_index'
+        ) ,
+    HandleBad => 1,
+    BadCode   => fill_in(
+        file    => 'bin_on_index.c',
+        package => 'bin_on_index_bad',
+        hash    => { PDL_BAD_CODE => 1 },
+    ),
+    PMCode    => slurp( 'bin_on_index.pl' ),
+#    Doc       => slurp( 'bin_on_index.pod' ),
+);
+
+
 
 # This is a private copy of  code which will be in a future version
 # of PDL. Don't use it!

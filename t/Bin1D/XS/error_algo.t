@@ -12,7 +12,7 @@ use My::Test;
 
 use POSIX qw[ DBL_MAX ];
 
-use PDLx::Bin1D::XS qw[ bin_adaptive_snr :constants ];
+use PDLx::Bin1D::XS qw[ bin_adaptive_snr bin_on_index :constants ];
 
 ############################################################
 # test different error algorithms
@@ -59,6 +59,7 @@ sub piddles {
         nelem => zeroes( double,      $NBINS ) + $NELEM,
     );
 
+    $exp{signal} = _whistogram( $exp{index}, $in{signal} );
     $exp{mean}   = _whistogram( $exp{index}, $in{signal} ) / $exp{nelem};
     $exp{weight} = _whistogram( $exp{index}, 1 / $in{error}**2 );
 
@@ -77,13 +78,14 @@ sub piddles_fold {
     );
 
     my %exp = (
-        index => sequence( PDL::long, $NDATA + 2) / $NELEM,
+        index => sequence( PDL::long, $NDATA + 2 ) / $NELEM,
         nelem => zeroes( double,      $NBINS ) + $NELEM,
     );
 
-    $exp{index}->mslice( [-2,-1] ) .= $NBINS-1;
+    $exp{index}->mslice( [ -2, -1 ] ) .= $NBINS - 1;
     $exp{nelem}->mslice( [-1] ) += 2;
 
+    $exp{signal} = _whistogram( $exp{index}, $in{signal} );
     $exp{mean}   = _whistogram( $exp{index}, $in{signal} ) / $exp{nelem};
     $exp{weight} = _whistogram( $exp{index}, 1 / $in{error}**2 );
 
@@ -179,7 +181,9 @@ for my $setup ( @setups ) {
 
         my ( $in, $exp, %args ) = $datafactory->();
 
-        my $label = join( ', ', $setup->( $in, $exp ), map { "$_ => $args{$_}" } keys %args );
+        my $label = 'bin_adaptive_snr: ' . join( ', ',
+            $setup->( $in, $exp ),
+            map { "$_ => $args{$_}" } keys %args );
 
         subtest $label => sub {
 
@@ -213,6 +217,39 @@ for my $setup ( @setups ) {
 
     }
 }
+
+for my $setup ( @setups ) {
+
+    my ( $in, $exp ) = piddles();
+
+    my $label = 'bin_on_index: ' . join( ', ', $setup->( $in, $exp ) );
+
+    subtest $label => sub {
+
+        my %got;
+        is(
+            exception {
+                %got = bin_on_index(
+                    signal => $in->{signal},
+                    error  => $in->{error},
+                    error_algo  => $in->{error_algo},
+                    index  => $exp->{index},
+                    nbins  => $NBINS,
+                );
+            },
+            undef,
+            "bin signal"
+        ) or return;
+
+        for my $field ( qw/ mean error nelem signal / ) {
+            is_pdl( $got{$field}, $exp->{$field}, $field );
+        }
+
+    };
+
+}
+
+
 done_testing;
 
 1;

@@ -10,13 +10,6 @@ use PDL::Lite;
 
 my $bin_adaptive_snr_check;
 
-my %MapErrorAlgo = (
-
-    sdev    => BIN_ARG_ERROR_SDEV,
-    rss     => BIN_ARG_ERROR_RSS,
-    poisson => BIN_ARG_ERROR_POISSON,
-);
-
 BEGIN {
 
     $bin_adaptive_snr_check = compile(
