@@ -74,8 +74,9 @@ sub test_base : Test(9) {
     is(
         exception {
             $histo = PDLx::Bin1D::Histo->new(
-                nbins => $stash->{nbins},
-                idx   => $stash->{index},
+                nbins    => $stash->{nbins},
+                idx      => $stash->{index},
+                save_oob => 1
             );
         },
         undef,
@@ -104,6 +105,7 @@ sub test_y : Test(9) {
                 nbins => $stash->{nbins},
                 idx   => $stash->{index},
                 y     => $stash->{y},
+                save_oob => 1
             );
         },
         undef,
@@ -140,6 +142,7 @@ sub test_err : Test(9) {
                 nbins => $stash->{nbins},
                 idx   => $stash->{index},
                 error => $stash->{error},
+                save_oob => 1
             );
         },
         undef,
@@ -169,6 +172,7 @@ sub test_y_err : Test(9) {
                 idx   => $stash->{index},
                 error => $stash->{error},
                 y     => $stash->{y},
+                save_oob => 1
             );
         },
         undef,
@@ -187,7 +191,7 @@ sub test_y_err : Test(9) {
 
     my $error = sqrt( _whistogram( $stash, $wt * ($stash->{y} - $mean->index( $stash->{index} + 1 ) )**2 ) / $wt_hist  * $stash->{nelem} / ( $stash->{nelem} -1 ) );
 
-    is_pdl( $histo->error, $error, 'RSS' );
+    is_pdl( $histo->error, $error, 'Weighted Standard Deviation' );
 }
 
 sub test_API : Test(10) {
@@ -202,6 +206,7 @@ sub test_API : Test(10) {
                 idx   => $stash->{index},
                 error => $stash->{error},
                 y     => $stash->{y},
+                save_oob => 1
             );
         },
         undef,
@@ -216,6 +221,7 @@ sub test_API : Test(10) {
                 error => $stash->{error},
                 x     => $stash->{x},
                 y     => $stash->{y},
+                save_oob => 1
             );
         },
         undef,

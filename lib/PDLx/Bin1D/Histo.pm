@@ -7,12 +7,14 @@ use Moo;
 use MooX::StrictConstructor;
 
 use Types::Common::Numeric qw[ PositiveInt ];
-use Types::Standard qw[ InstanceOf Bool Undef ];
+use Types::Standard qw[ InstanceOf Enum Bool ];
+
+use PDLx::Bin1D::XS qw[ bin_on_index ];
 
 use Safe::Isa;
 
 # number of requested bins. does not include the two bins which record
-# outliers
+# out-of-bounds data
 has nbins => (
     is       => 'ro',
     isa      => PositiveInt,
@@ -20,7 +22,7 @@ has nbins => (
 );
 
 # number of histogramed bins. includes the two bins which record
-# outliers
+# out-of-bounds data
 has hbins => (
     is       => 'lazy',
     init_arg => undef,
@@ -28,20 +30,22 @@ has hbins => (
     builder  => sub { $_[0]->nbins + 2 },
 );
 
-# index of elements in the histogram. outliers have indices of -1 or nbins
+# index of elements in the histogram. out-of-bounds data have indices
+#  < 0  or >= nbins
 has idx => (
     is       => 'ro',
     isa      => InstanceOf ['PDL'],
     required => 1,
 );
 
-has nelem => (
-    is      => 'lazy',
-    isa     => InstanceOf ['PDL'],
-    builder => sub {
-        my $self = shift;
-        $self->idx->histogram( 1, -1, $self->hbins );
-    } );
+# if true, peg the out-of-bounds data into the outerbins, otherwise
+# don't
+has save_oob => (
+    is       => 'ro',
+    isa      => Bool,
+    default  => 1
+
+);
 
 has x => (
     is  => 'ro',
@@ -59,101 +63,47 @@ has _error => (
     isa      => InstanceOf ['PDL'],
 );
 
-has _wt => (
-    is       => 'lazy',
-    isa      => InstanceOf ['PDL'] | Undef,
-    init_arg => undef,
-    builder  => sub {
-
-        defined $_[0]->_error
-          ? 1 / $_[0]->_error**2
-          : undef;
-
-
-    },
+has error_algo => (
+    is      => 'ro',
+    isa     => Enum [qw( sdev poisson rss )],
 );
 
-has _wt_sum => (
-    is       => 'lazy',
+
+# these attributes hold the results of the histogram
+
+has nelem => (
+    is       => 'rwp',
+    isa      => InstanceOf ['PDL'],
     init_arg => undef,
-    isa      => InstanceOf ['PDL'] | Undef,,
-    builder  => sub { $_[0]->_whistogram( $_[0]->_wt ) },
+    lazy     => 1,
+    default  => sub { shift->_build_histo->nelem },
+);
+
+has error => (
+    is       => 'rwp',
+    isa      => InstanceOf ['PDL'],
+    init_arg => undef,
+    lazy     => 1,
+    default  => sub { shift->_build_histo->error },
 );
 
 has histo => (
-    is      => 'lazy',
-    isa     => InstanceOf ['PDL'],
-    builder => sub {
-
-        my $self = shift;
-
-        defined $self->y
-          ? $self->_whistogram( $self->y )
-          : $self->nelem;
-    },
+    is       => 'rwp',
+    isa      => InstanceOf ['PDL'],
+    init_arg => undef,
+    lazy     => 1,
+    default  => sub { shift->_build_histo->histo },
 );
 
 has mean => (
-    is      => 'lazy',
-    isa     => InstanceOf ['PDL'],
-    builder => sub {
-
-        my $self = shift;
-
-        if ( defined $self->y && defined $self->_error ) {
-
-            return $self->_whistogram( $self->_wt * $self->y ) / $self->_wt_sum;
-        }
-
-        else {
-
-            return $self->histo / $self->nelem;
-
-        }
-    },
-);
-
-
-has error => (
-    is       => 'lazy',
-    isa      => InstanceOf ['PDL'],
+    is       => 'rwp',
     init_arg => undef,
-    builder  => sub {
+    isa      => InstanceOf ['PDL'],
+    lazy     => 1,
+    default  => sub { shift->_build_histo->mean },
+ );
 
-        my $self = shift;
 
-        # weighted average standard deviation
-        if ( defined $self->_wt && defined $self->y ) {
-
-            return sqrt( ( $self->_whistogram( $self->_wt * $self->y**2 ) / $self->_wt_sum - $self->mean**2) * $self->nelem / ( $self->nelem - 1 ) );
-
-        }
-
-        # RSS errors
-        elsif ( defined $self->_error ) {
-
-            return sqrt( $self->_whistogram( $self->_error**2 ) );
-
-        }
-
-        # standard deviation of the population in each bin
-        elsif ( defined $self->y ) {
-
-            return
-              sqrt( ( $self->_whistogram( $self->y**2 ) - $self->nelem * $self->mean**2 )
-		    / ( $self->nelem - 1 )
-		  );
-        }
-
-        # assume Poisson
-        else {
-
-            return sqrt( $self->nelem->double );
-
-        }
-
-    },
-);
 
 sub BUILDARGS {
 
@@ -190,23 +140,44 @@ sub BUILDARGS {
 }
 
 
-sub _whistogram {
+sub _build_histo {
 
-    my ( $self, $what ) = @_;
+    my $self = shift;
 
-    # as of (at least) PDL 2.007, the output type from whistogram
-    # depends upon the type of the _index_, not the _weight_.
-    # in the hopes that the latter eventually happens, set the type of
-    # the _index_ to that of the weight.
+    my %args;
 
-    my $index = $self->idx;
+    $args{signal} = $self->y if defined $self->y;
+    $args{error} = $self->_error if defined $self->_error;
 
-    if ( $index->type != $what->type ) {
-	my $convert_func = $what->type->convertfunc;
-	$index = $index->$convert_func
+
+    # are we storing out-of-bounds data in the outermost bins?
+    if ( $self->save_oob ) {
+
+
+	$args{nbins} = $self->hbins;  	# store into a couple of extra bins
+	$args{offset} = 1;              # shift up the indices by one
+	$args{oob_algo} = 'peg';        # keep them around.
+
     }
 
-    return $index->whistogram( $what, 1, -1, $self->hbins );
+    else {
+
+	$args{nbins} = $self->nbins;    # use only the bins we need for good data
+	$args{offset} = 0;              # keep the indices as they are
+	$args{oob_algo} = 'clip';       # ignore them
+
+    }
+
+    my %histo = bin_on_index( index => $self->idx,
+			      error_algo => $self->error_algo,
+			      %args );
+
+    $self->_set_histo( $histo{signal} );
+    $self->_set_error( $histo{error} );
+    $self->_set_nelem( $histo{nelem} );
+    $self->_set_mean( $histo{mean} );
+
+    return $self;
 }
 
 1;
