@@ -51,30 +51,47 @@ my $IndexParsType = eval { typefld( 'PDL_IND', 'ppforcetype' ) }
 
 my $IndexCType = eval { typefld( 'PDL_IND', 'ctype' ) } ? 'PDL_Indx' : 'long';
 
+sub bitflags {
+    my $bit = 1;
+    return shift(), 1,
+      map { $bit <<= 1; $_ => $bit; } @_;
+}
+
 my %CONSTANTS = (
     BIN_ARG => {
-        BIN_ARG_HAVE_ERROR    => 1,
-        BIN_ARG_SET_BAD       => 2,
-        BIN_ARG_FOLD          => 4,
-        BIN_ARG_HAVE_WIDTH    => 8,
-        BIN_ARG_ERROR_SDEV    => 16,
-        BIN_ARG_ERROR_POISSON => 32,
-        BIN_ARG_ERROR_RSS     => 64,
+        bitflags(
+            qw[
+	      BIN_ARG_HAVE_ERROR
+              BIN_ARG_SET_BAD
+              BIN_ARG_FOLD
+              BIN_ARG_HAVE_WIDTH
+              BIN_ARG_ERROR_SDEV
+              BIN_ARG_ERROR_POISSON
+              BIN_ARG_ERROR_RSS
+              BIN_ARG_HAVE_SIGNAL
+              BIN_ARG_OOB_CLIP
+              BIN_ARG_OOB_PEG
+              ]
+        ),
     },
     BIN_RC => {
-        BIN_RC_GTMINSN => 16,
-        BIN_RC_FOLDED  => 8,
-        BIN_RC_GENMAX  => 4,
-        BIN_RC_GEWMAX  => 2,
-        BIN_RC_OK      => 1,
-    } );
+        bitflags( qw[
+              BIN_RC_OK
+              BIN_RC_GEWMAX
+              BIN_RC_GENMAX
+              BIN_RC_FOLDED
+              BIN_RC_GTMINSN
+              ]
+        ),
+
+    },
+);
 
 # convert hash into [key => value] tuples, sorted by group, then value in group
-my @CONSTANTS =
-        map {
-            my $h = $_;
-            map { [ $_, $h->{$_} ] } sort { $h->{$a} <=> $h->{$b} } keys %$h;
-        } values %CONSTANTS;
+my @CONSTANTS = map {
+    my $h = $_;
+    map { [ $_, $h->{$_} ] } sort { $h->{$a} <=> $h->{$b} } keys %$h;
+} values %CONSTANTS;
 
 my @CONSTANT_NAMES = ( map { keys %$_ } values %CONSTANTS );
 my @EXPORT_OK;
@@ -142,8 +159,8 @@ sub fill_in {
 
 sub fill_in_string {
 
-  unshift @_, 'string';
-  goto \&fill_in;
+    unshift @_, 'string';
+    goto \&fill_in;
 
 }
 
@@ -162,10 +179,10 @@ EOD
 
 pp_addpm(
     { At => 'Top' },
-    join ( "\n",
-    'use constant { ',
-	 ( map { "$_->[0]\t=>\t$_->[1]," } @CONSTANTS ),
-    '};', '' ),
+    join( "\n",
+        'use constant { ',
+        ( map { "$_->[0]\t=>\t$_->[1]," } @CONSTANTS ),
+        '};', '' ),
 );
 
 
@@ -175,6 +192,10 @@ my %MapErrorAlgo = (
     sdev    => BIN_ARG_ERROR_SDEV,
     rss     => BIN_ARG_ERROR_RSS,
     poisson => BIN_ARG_ERROR_POISSON,
+);
+my %MapOOBAlgo = (
+    clip => BIN_ARG_OOB_CLIP,
+    peg  => BIN_ARG_OOB_PEG,
 );
 EOD
 
@@ -218,12 +239,10 @@ All functions are made available in the B<PDLx::Bin1D::XS> namespace.
 EOD
 
 pp_addhdr(
-    join(
-        "\n",
+    join( "\n",
         '#include <float.h>',
         '#include <limits.h>',
-	 map { "#define $_->[0]\t$_->[1]" } @CONSTANTS
-      )
+        map { "#define $_->[0]\t$_->[1]" } @CONSTANTS )
       . "\n"
 );
 
@@ -254,27 +273,31 @@ pp_def(
         'double [t] b_weight_sig(nwsdev)',
         'double [t] b_weight_sig2(nwsdev)',
     ),
-    RedoDimsCode => fill_in_string( q/
+    RedoDimsCode => fill_in_string(
+        q/
     <% $PDL_Indx %> n = $PDL(signal)->dims[0];
     $SIZE(nrss)   = $COMP(optflags) & BIN_ARG_ERROR_RSS  ? n : 0 ;
     $SIZE(nwidth) = $COMP(optflags) & BIN_ARG_HAVE_WIDTH ? n : 0 ;
     $SIZE(nsdev)  = $COMP(optflags) & BIN_ARG_ERROR_SDEV ? n : 0 ;
     $SIZE(nwsdev) = $COMP(optflags) & BIN_ARG_ERROR_SDEV & BIN_ARG_HAVE_ERROR? n : 0 ;
-/),
-    OtherPars => fill_in_string( join(
-        ';',
-        'unsigned long optflags'
-        ,    # can't call it flags; clashes with PDL internals
-        'double min_snr',
-        '<% $PDL_Indx %> min_nelem',
-        '<% $PDL_Indx %> max_nelem',
-        'double min_width',
-        'double max_width',
-    ) ),
+/
+    ),
+    OtherPars => fill_in_string(
+        join(
+            ';',
+            'unsigned long optflags'
+            ,    # can't call it flags; clashes with PDL internals
+            'double min_snr',
+            '<% $PDL_Indx %> min_nelem',
+            '<% $PDL_Indx %> max_nelem',
+            'double min_width',
+            'double max_width',
+        )
+    ),
     Code => fill_in(
-            file    => 'bin_adaptive_snr.c',
-            package => 'bin_adaptive_snr'
-        ),
+        file    => 'bin_adaptive_snr.c',
+        package => 'bin_adaptive_snr'
+    ),
     HandleBad => 1,
     BadCode   => fill_in(
         file    => 'bin_adaptive_snr.c',
@@ -291,9 +314,9 @@ pp_def(
     'bin_on_index',
     Pars => join(
         ';',
-        'signal(n)',    # piddle containing signal to bin
+        'signal(nsig)',               # piddle containing signal to bin
         "$IndexParsType index(n)",    # input index
-        'error(n)',     # error piddle if flags && HAVE_ERROR
+        'error(n)',                   # error piddle if flags && HAVE_ERROR
         "$IndexParsType nbins()",
         "$IndexParsType [o] nelem(nb)",
         'double [o] b_signal(nb)',
@@ -303,26 +326,34 @@ pp_def(
         'double [t] b_m2(nb)',
         'double [t] b_weight(nb)',
     ),
-    RedoDimsCode => q/
-    $SIZE(nb) = $COMP(maxnbins);
-/,
-    OtherPars => fill_in_string(  join(
-        ';',
-        'unsigned long optflags',   # can't call it flags; clashes with PDL internals
-	'<% $PDL_Indx %> maxnbins', #  maximum number of bins
-    )),
+    RedoDimsCode => fill_in_string(
+        q/
+    <% $PDL_Indx %> n = $PDL(signal)->dims[0];
+    $SIZE(nb)   = $COMP(maxnbins);
+    $SIZE(nsig) = $COMP(optflags) & BIN_ARG_HAVE_SIGNAL ? n : 0 ;
+/
+    ),
+    OtherPars => fill_in_string(
+        join(
+            ';',
+            'unsigned long optflags'
+            ,    # can't call it flags; clashes with PDL internals
+            '<% $PDL_Indx %> maxnbins',    #  maximum number of bins
+            '<% $PDL_Indx %> offset',      #  offset to add to index
+        )
+    ),
     Code => fill_in(
-            file    => 'bin_on_index.c',
-            package => 'bin_on_index'
-        ) ,
+        file    => 'bin_on_index.c',
+        package => 'bin_on_index'
+    ),
     HandleBad => 1,
     BadCode   => fill_in(
         file    => 'bin_on_index.c',
         package => 'bin_on_index_bad',
         hash    => { PDL_BAD_CODE => 1 },
     ),
-    PMCode    => slurp( 'bin_on_index.pl' ),
-#    Doc       => slurp( 'bin_on_index.pod' ),
+    PMCode => slurp( 'bin_on_index.pl' ),
+    #    Doc       => slurp( 'bin_on_index.pod' ),
 );
 
 
@@ -342,7 +373,7 @@ pp_def(
     Pars      => join( ';', 'i()', 'x(n)', "$IndexParsType [o]ip()", ),
     GenericTypes => [ 'F', 'D' ],    # too restrictive ?
     Code         => fill_in_string(
-		 q[threadloop %{
+        q[threadloop %{
 
                    <% $PDL_Indx %> n1 = $SIZE(n)-1;
                    <% $PDL_Indx %> low = 0;
@@ -363,7 +394,8 @@ pp_def(
                    $ip() = up ? high: low;
 
                 %}
-]),
+]
+    ),
     Doc => undef
 );
 

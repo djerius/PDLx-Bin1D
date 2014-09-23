@@ -6,14 +6,18 @@
 
 int flags = $COMP(optflags);
 
+int have_signal   = flags & BIN_ARG_HAVE_SIGNAL;
 int have_error    = flags & BIN_ARG_HAVE_ERROR;
 int error_sdev    = flags & BIN_ARG_ERROR_SDEV;
 int error_poisson = flags & BIN_ARG_ERROR_POISSON;
 int error_rss     = flags & BIN_ARG_ERROR_RSS;
-
+int oob_clip      = flags & BIN_ARG_OOB_CLIP;
+int oob_peg       = flags & BIN_ARG_OOB_PEG;
 
 threadloop %{
 
+    <% $PDL_Indx %> nbins_m1 = $nbins() - 1;
+    <% $PDL_Indx %> offset = $COMP(offset);
   <%
     # intialize output and temp bin data one at a time to
     # avoid trashing the cache
@@ -24,17 +28,25 @@ threadloop %{
     );
   %>
 
-  $nbins() = 0;
 
   loop(n) %{
 
     <% $PDL_Indx %> nelem;
-    <% $PDL_Indx %> index = $index();
+      <% $PDL_Indx %> index = $index() + offset;
 
-    double signal = $signal();
+    double signal = have_signal ? $signal(nsig => n ) : 1;
     double error;
     double error2;
     double weight;
+
+    if ( oob_clip && ( index < 0 || index > nbins_m1 ) )
+	continue;
+
+    if ( oob_peg ) {
+
+	if ( index < 0 )             index = 0;
+	else if ( index > nbins_m1 ) index = nbins_m1;
+    }
 
     if ( have_error ) {
 
@@ -62,8 +74,8 @@ threadloop %{
     /* calculate error */
     if ( error_sdev ) {
 
-      double sum_weight = have_error 
-			? $b_weight( nb => index ) += weight 
+      double sum_weight = have_error
+			? $b_weight( nb => index ) += weight
 			: nelem;
 
       /* incremental algorithm for possibly weighted standard deviation; see

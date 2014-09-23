@@ -3,6 +3,7 @@
 
 use Types::Common::Numeric qw[ PositiveNum PositiveInt PositiveOrZeroInt ];
 use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Undef ];
+use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Undef Int ];
 use Type::Params qw[ compile ];
 
 use Carp;
@@ -15,11 +16,13 @@ BEGIN {
 
     $bin_on_index_check = compile(
         slurpy Dict [
-	    index  => InstanceOf ['PDL'],
-            signal => InstanceOf ['PDL'],
-            nbins  => InstanceOf ['PDL'] | PositiveInt,
-            error  => Optional   [ InstanceOf ['PDL'] | Undef ],
-            error_algo => Optional [ Enum [ keys %MapErrorAlgo ] ],
+            index      => InstanceOf ['PDL'],
+            signal     => Optional   [ InstanceOf ['PDL'] ],
+            nbins      => InstanceOf ['PDL'] | PositiveInt,
+            error      => Optional   [ InstanceOf ['PDL'] | Undef ],
+            error_algo => Optional   [ Enum [ keys %MapErrorAlgo ] ],
+            oob_algo   => Optional   [ Enum [ keys %MapOOBAlgo ] ],
+            offset     => Optional   [Int],
         ] );
 }
 
@@ -30,6 +33,8 @@ sub bin_on_index {
     # specify defaults
     my %opt = (
         error_algo => 'sdev',
+        oob_algo => 'clip',
+        offset     => 0,
         %$opts
     );
 
@@ -37,8 +42,11 @@ sub bin_on_index {
       if !defined $opt{error} && $opt{error_algo} eq 'rss';
 
     $opt{flags}
-      = ( ( defined $opt{error} && BIN_ARG_HAVE_ERROR ) || 0 )
-      | ( ( $opt{set_bad}       && BIN_ARG_SET_BAD )    || 0 )
+      = ( ( defined $opt{signal}      && BIN_ARG_HAVE_SIGNAL ) || 0 )
+      | ( ( defined $opt{error}       && BIN_ARG_HAVE_ERROR )  || 0 )
+      | ( ( $opt{set_bad}             && BIN_ARG_SET_BAD )     || 0 )
+      | ( ( $opt{oob_algo} eq 'clip'  && BIN_ARG_OOB_CLIP )    || 0 )
+      | ( ( $opt{oob_algo} eq 'peg'   && BIN_ARG_OOB_PEG )     || 0 )
       | $MapErrorAlgo{ $opt{error_algo} };
 
     $opt{maxnbins} = PDL::Core::topdl( $opt{nbins} )->max;
@@ -46,7 +54,7 @@ sub bin_on_index {
     my @pin   = qw[ signal index error nbins ];
     my @pout  = qw[ nelem b_signal b_error b_mean ];
     my @ptmp  = qw[ b_error2 b_m2 b_weight  ];
-    my @oargs = qw[ flags maxnbins ];
+    my @oargs = qw[ flags maxnbins offset ];
 
 
     # several of the input piddles are optional.  the PP routine
@@ -54,9 +62,13 @@ sub bin_on_index {
     # dimensions if we pass a null piddle. A 1D zero element piddle
     # will have its dimensions auto-expanded without much
     # wasted memory.
-    $opt{$_} = PDL->new( 0 ) for grep { !defined $opt{$_} } @pin;
-    $opt{$_} = PDL->null     for grep { !defined $opt{$_} } @pout;
-    $opt{$_} = PDL->null     for grep { !defined $opt{$_} } @ptmp;
+    $opt{signal} = PDL->zeroes( PDL::double, 0 ) if !defined $opt{signal};
+
+    # make sure we use the same type as the input signal
+    $opt{$_} = $opt{signal}->zeroes( 1 ) for grep { !defined $opt{$_} } @pin;
+
+    $opt{$_} = PDL->null for grep { !defined $opt{$_} } @pout;
+    $opt{$_} = PDL->null for grep { !defined $opt{$_} } @ptmp;
 
     _bin_on_index_int( @opt{ @pin, @pout, @ptmp, @oargs } );
 
