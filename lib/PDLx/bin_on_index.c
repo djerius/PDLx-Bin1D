@@ -32,12 +32,23 @@ threadloop %{
   loop(n) %{
 
     <% $PDL_Indx %> nelem;
-      <% $PDL_Indx %> index = $index() + offset;
+    <% $PDL_Indx %> index = $index();
 
     double signal = have_signal ? $signal(nsig => n ) : 1;
     double error;
     double error2;
     double weight;
+    double bweight;
+
+#ifdef PDL_BAD_CODE
+    if (   $ISBADVAR(signal,signal)
+        || $ISBADVAR(index,index)
+         ) {
+      continue;
+    }
+#endif /* PDL_BAD_CODE */
+
+    index += offset;
 
     if ( oob_clip && ( index < 0 || index > nbins_m1 ) )
 	continue;
@@ -48,59 +59,52 @@ threadloop %{
 	else if ( index > nbins_m1 ) index = nbins_m1;
     }
 
+    nelem = ++$nelem( nb => index );
+    $b_signal(nb => index)  += signal;
+
     if ( have_error ) {
 
       error = $error();
+
+#ifdef PDL_BAD_CODE
+    if ( $ISBADVAR(error,error) ) {
+      continue;
+    }
+#endif /* PDL_BAD_CODE */
+
       error2 = error * error;
       weight = 1 / error2;
+      bweight = $b_weight( nb => index ) += weight;
 
     }
     else {
 
 	weight = 1;
-    }
-
-#ifdef PDL_BAD_CODE
-    if ( $ISBADVAR(signal,signal)
-         || have_error  && $ISBADVAR(error,error)
-         ) {
-      continue;
-    }
-#endif /* PDL_BAD_CODE */
-
-    nelem = ++$nelem( nb => index );
-    $b_signal(nb => index)  += signal;
-
-    /* calculate error */
-    if ( error_sdev ) {
-
-      double sum_weight = have_error
-			? $b_weight( nb => index ) += weight
-			: nelem;
-
-      /* incremental algorithm for possibly weighted standard deviation; see
-         https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-	*/
-      double delta = signal - $b_mean( nb => index );
-      double bmean = $b_mean( nb => index)  += delta * weight / sum_weight;
-
-      $b_m2( nb => index ) += weight * delta * ( signal - bmean );
-
-    }
-
-    else if ( error_rss ) {
-
-	double delta    = signal - $b_mean( nb => index );
-	double bweight  = $b_weight( nb => index ) += weight;
-	$b_mean( nb => index )     += delta * weight / bweight;
-	$b_error2( nb => index )   += error2;
-
+	bweight = nelem;
     }
 
 
-    else if ( ! error_poisson ) {
+    {
+	/** stable means of generating the mean */
+	double delta = signal - $b_mean( nb => index );
+	double bmean = $b_mean( nb => index)  += delta * weight / bweight;
 
-	croak( "internal error" );
+	/* calculate error */
+	if ( error_sdev ) {
+
+	    /* incremental algorithm for possibly weighted standard deviation; see
+	       https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+	    */
+
+	    $b_m2( nb => index ) += weight * delta * ( signal - bmean );
+
+	}
+
+	else if ( error_rss ) {
+
+	    $b_error2( nb => index )   += error2;
+
+	}
 
     }
 
