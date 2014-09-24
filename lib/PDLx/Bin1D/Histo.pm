@@ -21,15 +21,6 @@ has nbins => (
     required => 1,
 );
 
-# number of histogramed bins. includes the two bins which record
-# out-of-bounds data
-has hbins => (
-    is       => 'lazy',
-    init_arg => undef,
-    isa      => PositiveInt,
-    builder  => sub { $_[0]->nbins + 2 },
-);
-
 # index of elements in the histogram. out-of-bounds data have indices
 #  < 0  or >= nbins
 has idx => (
@@ -148,28 +139,11 @@ sub _build_histo {
 
     $args{signal} = $self->y if defined $self->y;
     $args{error} = $self->_error if defined $self->_error;
-
-
-    # are we storing out-of-bounds data in the outermost bins?
-    if ( $self->save_oob ) {
-
-
-	$args{nbins} = $self->hbins;  	# store into a couple of extra bins
-	$args{offset} = 1;              # shift up the indices by one
-	$args{oob_algo} = 'peg';        # keep them around.
-
-    }
-
-    else {
-
-	$args{nbins} = $self->nbins;    # use only the bins we need for good data
-	$args{offset} = 0;              # keep the indices as they are
-	$args{oob_algo} = 'clip';       # ignore them
-
-    }
+    $args{oob} = $self->save_oob;
 
     my $histo = bin_on_index( index => $self->idx,
 			      error_algo => $self->error_algo,
+			      nbins => $self->nbins,
 			      %args );
 
     $self->_set_histo( $histo->{signal} );

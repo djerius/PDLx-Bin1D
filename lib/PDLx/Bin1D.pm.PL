@@ -70,8 +70,7 @@ my %CONSTANTS = (
               BIN_ARG_ERROR_POISSON
               BIN_ARG_ERROR_RSS
               BIN_ARG_HAVE_SIGNAL
-              BIN_ARG_OOB_CLIP
-              BIN_ARG_OOB_PEG
+              BIN_ARG_SAVE_OOB
               ]
         ),
     },
@@ -193,10 +192,6 @@ my %MapErrorAlgo = (
     sdev    => BIN_ARG_ERROR_SDEV,
     rss     => BIN_ARG_ERROR_RSS,
     poisson => BIN_ARG_ERROR_POISSON,
-);
-my %MapOOBAlgo = (
-    clip => BIN_ARG_OOB_CLIP,
-    peg  => BIN_ARG_OOB_PEG,
 );
 EOD
 

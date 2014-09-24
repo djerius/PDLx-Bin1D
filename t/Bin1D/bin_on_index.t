@@ -69,20 +69,19 @@ sub test_base : Test(9) {
     is(
         exception {
             $bins = bin_on_index(
-                index    => $stash->{index},
-                nbins    => $stash->{nbins} + 2,
-                oob_algo => 'peg',
-                offset   => 1,
+                index => $stash->{index},
+                nbins => $stash->{nbins},
+                oob   => 1,
             );
         },
         undef,
         'create histogram'
     );
 
-    is_pdl( $bins->{signal}, $stash->{nelem}, "histogram" );
-    is_pdl( $bins->{nelem}, $stash->{nelem}, "number of elements" );
-    is_pdl( $bins->{mean},  $stash->{nelem}->ones, 'mean' );
-    is_pdl( $bins->{error}, sqrt( $stash->{nelem} ), 'Poisson errors' );
+    is_pdl( $bins->{signal}, $stash->{nelem},         "histogram" );
+    is_pdl( $bins->{nelem},  $stash->{nelem},         "number of elements" );
+    is_pdl( $bins->{mean},   $stash->{nelem}->ones,   'mean' );
+    is_pdl( $bins->{error},  sqrt( $stash->{nelem} ), 'Poisson errors' );
 }
 
 # y, no error
@@ -94,11 +93,10 @@ sub test_y : Test(9) {
     is(
         exception {
             $bins = bin_on_index(
-                signal   => $stash->{y},
-                index    => $stash->{index},
-                nbins    => $stash->{nbins} + 2,
-                oob_algo => 'peg',
-                offset   => 1,
+                signal => $stash->{y},
+                index  => $stash->{index},
+                nbins  => $stash->{nbins},
+                oob    => 1,
             );
         },
         undef,
@@ -132,20 +130,19 @@ sub test_err : Test(9) {
     is(
         exception {
             $bins = bin_on_index(
-                index    => $stash->{index},
-                error    => $stash->{error},
-                nbins    => $stash->{nbins} + 2,
-                oob_algo => 'peg',
-                offset   => 1,
+                index => $stash->{index},
+                error => $stash->{error},
+                nbins => $stash->{nbins},
+                oob   => 1,
             );
         },
         undef,
         'create histogram'
     );
 
-    is_pdl( $bins->{signal}, $stash->{nelem}, "histogram" );
-    is_pdl( $bins->{nelem}, $stash->{nelem},       "number of elements" );
-    is_pdl( $bins->{mean},  $stash->{nelem}->ones, 'mean' );
+    is_pdl( $bins->{signal}, $stash->{nelem},       "histogram" );
+    is_pdl( $bins->{nelem},  $stash->{nelem},       "number of elements" );
+    is_pdl( $bins->{mean},   $stash->{nelem}->ones, 'mean' );
     my $error2 = _whistogram( $stash, $stash->{error}**2 );
 
     is_pdl( $bins->{error}, sqrt( $error2 ), 'RSS' );
@@ -159,12 +156,11 @@ sub test_y_err : Test(9) {
     is(
         exception {
             $bins = bin_on_index(
-                signal   => $stash->{y},
-                index    => $stash->{index},
-                error    => $stash->{error},
-                nbins    => $stash->{nbins} + 2,
-                oob_algo => 'peg',
-                offset   => 1,
+                signal => $stash->{y},
+                index  => $stash->{index},
+                error  => $stash->{error},
+                nbins  => $stash->{nbins},
+                oob    => 1,
             );
         },
         undef,
@@ -181,7 +177,12 @@ sub test_y_err : Test(9) {
     my $mean = _whistogram( $stash, $stash->{y} * $wt ) / $wt_hist;
     is_pdl( $bins->{mean}, $mean, 'mean' );
 
-    my $error = sqrt( _whistogram( $stash, $wt * ($stash->{y} - $mean->index( $stash->{index} + 1 ) )**2 ) / $wt_hist  * $stash->{nelem} / ( $stash->{nelem} -1 ) );
+    my $error = sqrt(
+        _whistogram( $stash,
+            $wt * ( $stash->{y} - $mean->index( $stash->{index} + 1 ) )**2 )
+          / $wt_hist
+          * $stash->{nelem}
+          / ( $stash->{nelem} - 1 ) );
 
     is_pdl( $bins->{error}, $error, 'Weighted Standard Deviation' );
 }

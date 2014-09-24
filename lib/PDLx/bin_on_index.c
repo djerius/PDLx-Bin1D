@@ -11,8 +11,7 @@ int have_error    = flags & BIN_ARG_HAVE_ERROR;
 int error_sdev    = flags & BIN_ARG_ERROR_SDEV;
 int error_poisson = flags & BIN_ARG_ERROR_POISSON;
 int error_rss     = flags & BIN_ARG_ERROR_RSS;
-int oob_clip      = flags & BIN_ARG_OOB_CLIP;
-int oob_peg       = flags & BIN_ARG_OOB_PEG;
+int save_oob      = flags & BIN_ARG_SAVE_OOB;
 
 threadloop %{
 
@@ -50,14 +49,16 @@ threadloop %{
 
     index += offset;
 
-    if ( oob_clip && ( index < 0 || index > nbins_m1 ) )
-	continue;
 
-    if ( oob_peg ) {
+    if ( save_oob ) {
 
 	if ( index < 0 )             index = 0;
 	else if ( index > nbins_m1 ) index = nbins_m1;
+
     }
+    else if ( index < 0 || index > nbins_m1 )
+	continue;
+
 
     nelem = ++$nelem( nb => index );
     $b_signal(nb => index)  += signal;
