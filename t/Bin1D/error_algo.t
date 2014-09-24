@@ -226,10 +226,10 @@ for my $setup ( @setups ) {
 
     subtest $label => sub {
 
-        my %got;
+        my $got;
         is(
             exception {
-                %got = bin_on_index(
+                $got = bin_on_index(
                     signal => $in->{signal},
                     error  => $in->{error},
                     error_algo  => $in->{error_algo},
@@ -242,7 +242,7 @@ for my $setup ( @setups ) {
         ) or return;
 
         for my $field ( qw/ mean error nelem signal / ) {
-            is_pdl( $got{$field}, $exp->{$field}, $field );
+            is_pdl( $got->{$field}, $exp->{$field}, $field );
         }
 
     };

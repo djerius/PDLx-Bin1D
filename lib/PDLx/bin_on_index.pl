@@ -83,7 +83,7 @@ sub bin_on_index {
     } @pout;
 
 
-    return %results;
+    return \%results;
 }
 
 
@@ -93,7 +93,7 @@ sub bin_on_index {
 
 =for usage
 
-  %hash = bin_on_index( %pars  );
+  $hashref = bin_on_index( %pars  );
 
 =for ref
 
@@ -201,7 +201,7 @@ make the first and last bins contain the out-of-bound data.
 
 =head3 Results
 
-B<bin_on_index> returns a hash with the following entries:
+B<bin_on_index> returns a hashref with the following entries:
 
 =over
 

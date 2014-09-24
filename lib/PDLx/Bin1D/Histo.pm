@@ -168,14 +168,14 @@ sub _build_histo {
 
     }
 
-    my %histo = bin_on_index( index => $self->idx,
+    my $histo = bin_on_index( index => $self->idx,
 			      error_algo => $self->error_algo,
 			      %args );
 
-    $self->_set_histo( $histo{signal} );
-    $self->_set_error( $histo{error} );
-    $self->_set_nelem( $histo{nelem} );
-    $self->_set_mean( $histo{mean} );
+    $self->_set_histo( $histo->{signal} );
+    $self->_set_error( $histo->{error} );
+    $self->_set_nelem( $histo->{nelem} );
+    $self->_set_mean( $histo->{mean} );
 
     return $self;
 }
