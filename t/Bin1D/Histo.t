@@ -217,7 +217,7 @@ sub test_API : Test(10) {
     is(
         exception {
             $gridhisto = PDLx::Bin1D::Histo->new(
-                bins => $stash->{grid},
+                grid  => $stash->{grid},
                 error => $stash->{error},
                 x     => $stash->{x},
                 y     => $stash->{y},

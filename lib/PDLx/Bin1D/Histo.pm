@@ -103,27 +103,27 @@ sub BUILDARGS {
     my $args = $class->next::method( @_ );
 
     # possible combinations:
-    # bins, x, [ y, ... ]
+    # grid, x, [ y, ... ]
     # idx, nbins, [ x, y, ... ]
 
-    if ( defined( my $bins = delete $args->{bins} ) ) {
+    if ( defined( my $grid = delete $args->{grid} ) ) {
 
-        croak( "specify only one of attributes 'bins' or 'idx'\n" )
+        croak( "specify only one of attributes 'grid' or 'idx'\n" )
           if defined $args->{idx};
 
-        croak( "don't specify attribute 'nbins' if specifying 'bins'\n" )
+        croak( "don't specify attribute 'nbins' if specifying 'grid'\n" )
           if defined $args->{nbins};
 
         croak(
-            "must specify 'x' attribute (a PDL object) if specifying 'bins' attribute\n"
+            "must specify 'x' attribute (a PDL object) if specifying 'grid' attribute\n"
         ) unless defined $args->{x} && $args->{x}->$_isa( 'PDL' );
 
         croak(
-            "attribute 'bins' must inherit from class 'PDLx::Bin1D::Grid::Base'\n" )
-          unless $bins->$_isa( 'PDLx::Bin1D::Grid::Base' );
+            "attribute 'grid' must inherit from class 'PDLx::Bin1D::Grid::Base'\n" )
+          unless $grid->$_isa( 'PDLx::Bin1D::Grid::Base' );
 
-        $args->{nbins} = $bins->nbins;
-        $args->{idx}   = $bins->bin( $args->{x} );
+        $args->{nbins} = $grid->nbins;
+        $args->{idx}   = $grid->bin( $args->{x} );
     }
 
     return $args;
