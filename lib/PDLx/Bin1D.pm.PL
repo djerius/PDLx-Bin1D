@@ -21,7 +21,7 @@
 #
 # -->8-->8-->8-->8--
 
-package PDLx::Bin1D::XS;
+package PDLx::Bin1D;
 
 use strict;
 use warnings;
@@ -36,9 +36,10 @@ use Try::Tiny;
 
 use constant LIBDIR => ( fileparse( $0 ) )[1];
 
-use PDL::PP ( __PACKAGE__, __PACKAGE__, catfile( LIBDIR, 'XS' ) );
+use PDL::PP ( __PACKAGE__, __PACKAGE__, catfile( LIBDIR, 'Bin1D' ) );
 
 our $VERSION = '0.01';
+pp_setversion( $VERSION );
 
 use PDL::Types qw[ typefld ];
 
@@ -219,16 +220,16 @@ pp_addpm( { At => 'Top' }, <<'EOD' );
 
 =head1 NAME
 
-PDLx::Bin1D::XS - specialized one dimensional binning functions
+PDLx::Bin1D - one dimensional binning functions
 
 =head1 SYNOPSIS
 
   use PDL;
-  use PDLx::Bin1D::XS;
+  use PDLx::Bin1D;
 
 =head1 DESCRIPTION
 
-All functions are made available in the B<PDLx::Bin1D::XS> namespace.
+All functions are made available in the B<PDLx::Bin1D> namespace.
 
 =cut
 EOD

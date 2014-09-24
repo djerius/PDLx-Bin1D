@@ -9,7 +9,7 @@ use MooX::StrictConstructor;
 use Types::Common::Numeric qw[ PositiveInt ];
 use Types::Standard qw[ InstanceOf Enum Bool ];
 
-use PDLx::Bin1D::XS qw[ bin_on_index ];
+use PDLx::Bin1D qw[ bin_on_index ];
 
 use Safe::Isa;
 

@@ -12,7 +12,7 @@ use My::Test;
 
 use POSIX qw[ DBL_MAX ];
 
-use PDLx::Bin1D::XS qw[ bin_adaptive_snr bin_on_index :constants ];
+use PDLx::Bin1D qw[ bin_adaptive_snr bin_on_index :constants ];
 
 ############################################################
 # test different error algorithms

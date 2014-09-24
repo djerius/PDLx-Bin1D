@@ -11,7 +11,7 @@ use Types::Common::Numeric qw[ PositiveInt ];
 use Type::Params qw[ compile ];
 
 use PDL::Lite;
-use PDLx::Bin1D::XS;
+use PDLx::Bin1D;
 use Safe::Isa;
 
 use overload '+' => \&merge;
@@ -118,7 +118,7 @@ sub bin {
 
     my ( $self, $x ) = $bin_check->( @_ );
 
-    return PDLx::Bin1D::XS::_vsearch_bin_inclusive( $x, $self->bin_edges );
+    return PDLx::Bin1D::_vsearch_bin_inclusive( $x, $self->bin_edges );
 }
 
 

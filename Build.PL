@@ -8,13 +8,13 @@ copy( PDL_TYPEMAP, 'typemap' )
 my $build = Module::Build->new(
 
     dist_name            => 'PDLx-Bin1D',
-    dist_version_from    => 'lib/PDLx/Bin1D.pm',
+    dist_version_from    => 'lib/PDLx/Bin1D.pm.PL',
     license              => 'gpl3',
     create_license       => 1,
     recursive_test_files => 1,
     PL_files             => {
-        'lib/PDLx/Bin1D/XS.pm.PL' =>
-          [ 'lib/PDLx/Bin1D/XS.pm', 'lib/PDLx/Bin1D/XS.xs' ],
+        'lib/PDLx/Bin1D.pm.PL' =>
+          [ 'lib/PDLx/Bin1D.pm', 'lib/PDLx/Bin1D.xs' ],
     },
 
     needs_compiler => 1,

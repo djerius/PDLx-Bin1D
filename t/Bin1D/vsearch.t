@@ -7,7 +7,7 @@ use Test::More;
 
 use PDL::LiteF;
 
-use PDLx::Bin1D::XS;
+use PDLx::Bin1D;
 
 # choose a non-factor of two odd number for the length
 my $N = 723;
@@ -74,7 +74,7 @@ for my $fname (
 {
 
     my $data   = $search{$fname};
-    my $module = "PDLx::Bin1D::XS";
+    my $module = "PDLx::Bin1D";
     my $pfname = "${module}::$fname";
 
     subtest $fname => sub {

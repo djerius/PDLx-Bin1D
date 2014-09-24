@@ -282,7 +282,7 @@ data value in a bin. Only indices C<0> through C<nbins -1 > are valid.
 
 A piddle containing a results code for each output bin.  Only indices
 C<0> through C<nbins -1 > are valid.  The code is the bitwise "or" of
-the following constants (available in the C<PDLx::Bin1D::XS>
+the following constants (available in the C<PDLx::Bin1D>
 namespace)
 
 =over

@@ -7,10 +7,10 @@ all_from 'lib/PDLx/Bin1D.pm';
 makemaker_args(
 
     PL_FILES => {
-        'lib/PDLx/Bin1D/XS.pm.PL' =>
-          [ 'lib/PDLx/Bin1D/XS.pm', 'lib/PDLx/Bin1D/XS.xs' ],
+        'lib/PDLx/Bin1D.pm.PL' =>
+          [ 'lib/PDLx/Bin1D.pm', 'lib/PDLx/Bin1D.xs' ],
     },
-    XS => { 'lib/PDLx/Bin1D/XS.xs' => 'lib/PDLx/Bin1D/XS.c' },
+    XS => { 'lib/PDLx/Bin1D.xs' => 'lib/PDLx/Bin1D.c' },
 
 );
 
