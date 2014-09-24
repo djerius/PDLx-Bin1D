@@ -113,14 +113,14 @@ sub test_internals {
         ( defined $in{error} ? 'error' : 'sdev ' ),
     );
 
-    my %got;
-    is( exception { %got = bin_adaptive_snr( %in ) },
+    my $got;
+    is( exception { $got = bin_adaptive_snr( %in ) },
         undef, "$testid: bin signal" )
       or return;
 
-    my $nbins = $got{nbins}->at( 0 );
-    $got{$_} = $got{$_}->mslice( [ 0, $nbins - 1 ] )->sever
-      for grep { ( $got{$_}->dims )[0] }
+    my $nbins = $got->{nbins}->at( 0 );
+    $got->{$_} = $got->{$_}->mslice( [ 0, $nbins - 1 ] )->sever
+      for grep { ( $got->{$_}->dims )[0] }
       qw/ nelem signal error width snr rc ifirst ilast /;
 
     # check if sum & error are calculated correctly
@@ -136,9 +136,9 @@ sub test_internals {
     # ensure that the number of elements in each bin reflects the
     # indices for the range of data points included in a bin.
     {
-        my $nelem = $got{ilast} - $got{ifirst} + 1;
+        my $nelem = $got->{ilast} - $got->{ifirst} + 1;
 
-        is_pdl( $got{nelem}, $nelem, "number of elements in each bin" );
+        is_pdl( $got->{nelem}, $nelem, "number of elements in each bin" );
 
     }
 
@@ -146,16 +146,16 @@ sub test_internals {
     # the number of elements in each bin
     {
         my $index  = zeroes( long, $in{signal}->dims );
-        my $ilast  = $got{nelem}->cumusumover - 1;
-        my $ifirst = $ilast - $got{nelem} + 1;
+        my $ilast  = $got->{nelem}->cumusumover - 1;
+        my $ifirst = $ilast - $got->{nelem} + 1;
         $index->mslice( [ $ifirst->at( $_ ), $ilast->at( $_ ) ] ) .= $_
           for 0 .. $nbins - 1;
-        is_pdl( $got{index}, $index, 'index' );
+        is_pdl( $got->{index}, $index, 'index' );
     }
 
     for my $bin ( 0 .. $nbins - 1 ) {
         my ( $ifirst, $ilast )
-          = ( $got{ifirst}->at( $bin ), $got{ilast}->at( $bin ) );
+          = ( $got->{ifirst}->at( $bin ), $got->{ilast}->at( $bin ) );
 
         my ( $signal, $noise ) = $calc_error->( $ifirst, $ilast, %in );
 
@@ -191,8 +191,8 @@ sub test_internals {
       = map { pdl( $_ ) } \@snl, \@sn,
       \@signal, \@error;
 
-    is_pdl( $got{signal}, $c_signal, "$testid: signal" );
-    is_pdl( $got{error},  $c_error,  "$testid: error" );
+    is_pdl( $got->{signal}, $c_signal, "$testid: signal" );
+    is_pdl( $got->{error},  $c_error,  "$testid: error" );
 
 
     # if the maximum number of elements is reached, or the maximum bin
@@ -207,7 +207,7 @@ sub test_internals {
     my @mskd = qw( rc signal error nelem width ifirst ilast );
 
     ( $c_sn, $c_snl, @mskd{@mskd} )
-      = where( $c_sn, $c_snl, @got{@mskd}, $got{rc} == BIN_RC_OK );
+      = where( $c_sn, $c_snl, @{$got}{@mskd}, $got->{rc} == BIN_RC_OK );
 
     # make sure that the minimum possible S/N was actually returned
     # recall that $msn is calculated using one fewer input bins, so that
@@ -215,7 +215,7 @@ sub test_internals {
     ok( all( $c_snl < $in{min_snr} ), "$testid: minimum actual S/N" );
 
     # make sure that the number of elements are correctly limited
-    ok( all( $got{nelem} >= $in{min_nelem} ), "$testid: minimum nelem" );
+    ok( all( $got->{nelem} >= $in{min_nelem} ), "$testid: minimum nelem" );
     ok( $in{max_nelem} ? all( $mskd{nelem} <= $in{max_nelem} ) : 1,
         "$testid: maximum nelem" );
 
@@ -223,11 +223,11 @@ sub test_internals {
     if ( defined $in{width} ) {
         my $wsum = $in{width}->cumusumover;
         my $widths
-          = $wsum->index( $got{ilast} )
-          - $wsum->index( $got{ifirst} )
-          + $in{width}->index( $got{ifirst} );
+          = $wsum->index( $got->{ilast} )
+          - $wsum->index( $got->{ifirst} )
+          + $in{width}->index( $got->{ifirst} );
 
-        is_pdl( $widths, $got{width}, "$testid: widths" );
+        is_pdl( $widths, $got->{width}, "$testid: widths" );
     }
 
     # make sure that the bin widths are correctly limited
@@ -247,27 +247,27 @@ sub test_internals {
     {
         my $rc = zeroes( byte, $nbins );
 
-        $rc->where( $got{nelem} >= $in{max_nelem} ) |= BIN_RC_GENMAX
+        $rc->where( $got->{nelem} >= $in{max_nelem} ) |= BIN_RC_GENMAX
           if defined $in{max_nelem};
 
-        $rc->where( $got{width} >= $in{max_width} ) |= BIN_RC_GEWMAX
+        $rc->where( $got->{width} >= $in{max_width} ) |= BIN_RC_GEWMAX
           if defined $in{max_width};
 
         my $bin_ok = $rc->ones;
 
-        $bin_ok &= ( $got{nelem} >= $in{min_nelem} )
+        $bin_ok &= ( $got->{nelem} >= $in{min_nelem} )
           if defined $in{min_nelem};
 
-        $bin_ok &= ( $got{snr} >= $in{min_snr} )
+        $bin_ok &= ( $got->{snr} >= $in{min_snr} )
           if defined $in{min_snr};
 
-        $bin_ok &= $got{width} >= $in{min_width}
+        $bin_ok &= $got->{width} >= $in{min_width}
           if defined $in{width};
 
         $rc->where( $bin_ok ) |= BIN_RC_OK;
 
         # can't easily test if the last bin is folded, so don't foldedness.
-        is_pdl( $got{rc} & ~pdl( long, BIN_RC_FOLDED ), $rc, "$testid: rc" );
+        is_pdl( $got->{rc} & ~pdl( long, BIN_RC_FOLDED ), $rc, "$testid: rc" );
     }
 
 

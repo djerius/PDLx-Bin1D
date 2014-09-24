@@ -187,29 +187,29 @@ for my $setup ( @setups ) {
 
         subtest $label => sub {
 
-            my %got;
+            my $got;
             is(
                 exception {
-                    %got = bin_adaptive_snr( %$in, %args );
+                    $got = bin_adaptive_snr( %$in, %args );
                 },
                 undef,
                 "bin signal"
             ) or return;
 
-            my $nbins = delete $got{nbins};
+            my $nbins = delete $got->{nbins};
 
-            for my $field ( grep { exists $got{$_} && exists $exp->{$_} }
+            for my $field ( grep { exists $got->{$_} && exists $exp->{$_} }
                 qw/ mean error nelem signal / )
             {
 
-                is_pdl( $got{$field}->mslice( [ 0, $nbins - 1 ] ),
+                is_pdl( $got->{$field}->mslice( [ 0, $nbins - 1 ] ),
                     $exp->{$field}, $field );
 
             }
 
             for my $field ( qw/ index / ) {
 
-                is_pdl( $got{$field}, $exp->{$field}, $field );
+                is_pdl( $got->{$field}, $exp->{$field}, $field );
 
             }
 

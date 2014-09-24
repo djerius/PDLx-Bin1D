@@ -246,19 +246,19 @@ subtest 'rss error' => sub {
 		1, 0, 100 );
 
     $exp{error}->inplace->sqrt;
-    my %got;
+    my $got;
 
     is(
        exception {
-	 %got = bin_adaptive_snr( %in );
-       }, 
+	 $got = bin_adaptive_snr( %in );
+       },
        undef,
        "bin signal" )
       or return;
 
-    my $nbins = delete $got{nbins};
+    my $nbins = delete $got->{nbins};
 
-    is_pdl( $got{error}->mslice([0,$nbins-1]),  $exp{error}, 'error' );
+    is_pdl( $got->{error}->mslice([0,$nbins-1]),  $exp{error}, 'error' );
 
 };
 
@@ -281,21 +281,21 @@ sub test_explicit {
           grep { defined $in{$_} }
           qw/ min_snr min_nelem max_nelem min_width max_width / );
 
-    my %got;
-    is( exception { %got = bin_adaptive_snr( %in ) },
+    my $got;
+    is( exception { $got = bin_adaptive_snr( %in ) },
         undef, "$testid: bin signal" )
       or return;
 
-    my $nbins = $got{nbins}->at( 0 );
+    my $nbins = $got->{nbins}->at( 0 );
 
 
 
     my @exp_binned
       = grep { defined $exp{$_} } qw/ nelem signal width error snr rc /;
 
-    $got{$_} = $got{$_}->mslice( [ 0, $nbins - 1 ] )->sever for @exp_binned;
+    $got->{$_} = $got->{$_}->mslice( [ 0, $nbins - 1 ] )->sever for @exp_binned;
 
-    is_pdl( $got{$_}, $exp{$_}, "$testid: $_" ) for @exp_binned;
+    is_pdl( $got->{$_}, $exp{$_}, "$testid: $_" ) for @exp_binned;
 
     {
         my $index  = zeroes( long, $in{signal}->dims );
@@ -303,7 +303,7 @@ sub test_explicit {
         my $ifirst = $ilast - $exp{nelem} + 1;
         $index->mslice( [ $ifirst->at( $_ ), $ilast->at( $_ ) ] ) .= $_
           for 0 .. $nbins - 1;
-        is_pdl( $got{index}, $index, 'index' );
+        is_pdl( $got->{index}, $index, 'index' );
     }
 
 }

@@ -87,7 +87,7 @@ sub bin_adaptive_snr {
     } @pout;
 
 
-    return %results;
+    return wantarray ? %results : \%results;
 }
 
 =pod
@@ -144,7 +144,7 @@ the population using either the number of data elements in a bin
 If errors are provided, they may be used to weight the population standard
 deviaton or may be added in quadrature.
 
-Binning begins at the start of the data vector.  Data are accumulated
+Binning begins at the start of the signal vector.  Data are accumulated
 into a bin until one or more of the possible criteria is met. If the
 final bin does not meet the required criteria, it may optionally be
 successively folded into preceding bins until the final bin passes the
@@ -232,7 +232,7 @@ ensure that the last bin meets one or more of the criteria. It defaults to false
 
 =head3 Results
 
-B<bin_adaptive_snr> returns a hash with the following entries:
+B<bin_adaptive_snr> returns a hashref with the following entries:
 
 =over
 
