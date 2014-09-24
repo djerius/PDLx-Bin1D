@@ -6,14 +6,14 @@ use warnings;
 use Test::More;
 use Test::Lib;
 use My::Test;
-use PDLx::Bin1D::Base;
+use PDLx::Bin1D::Grid::Base;
 
 use PDL::Lite;
 {
 
     my $bin_edges = PDL->sequence( 10 );
 
-    my $grid = PDLx::Bin1D::Base->new( bin_edges => $bin_edges, oob => 0 );
+    my $grid = PDLx::Bin1D::Grid::Base->new( bin_edges => $bin_edges, oob => 0 );
 
     is_grid(
         $grid,
@@ -29,7 +29,7 @@ use PDL::Lite;
 {
     my $bin_edges = PDL->sequence( 10 );
 
-    my $grid = PDLx::Bin1D::Base->new( bin_edges => $bin_edges, oob => 1 );
+    my $grid = PDLx::Bin1D::Grid::Base->new( bin_edges => $bin_edges, oob => 1 );
 
     is_grid(
         $grid,
@@ -55,7 +55,7 @@ use PDL::Lite;
     my $data = (PDL->sequence( 100 ) / 10)->floor;
     $data = $data->index( $data->random->qsorti );
 
-    my $grid = PDLx::Bin1D::Base->new( bin_edges => $bin_edges );
+    my $grid = PDLx::Bin1D::Grid::Base->new( bin_edges => $bin_edges );
 
     my $index = $grid->bin( $data );
 
@@ -71,7 +71,7 @@ use PDL::Lite;
 
     $data = $data->index( $data->random->qsorti );
 
-    my $grid = PDLx::Bin1D::Base->new( bin_edges => $bin_edges, oob => 1 );
+    my $grid = PDLx::Bin1D::Grid::Base->new( bin_edges => $bin_edges, oob => 1 );
 
     my $index = $grid->bin( $data );
 

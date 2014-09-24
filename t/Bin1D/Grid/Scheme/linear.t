@@ -8,7 +8,7 @@ use Set::Partition;
 use Test::Fatal;
 
 use PDL::Lite;
-use PDLx::Bin1D::Scheme::linear;
+use PDLx::Bin1D::Grid::Scheme::linear;
 
 {
 
@@ -22,7 +22,7 @@ use PDLx::Bin1D::Scheme::linear;
     );
 
 
-    my $grid = PDLx::Bin1D::Scheme::linear->new(
+    my $grid = PDLx::Bin1D::Grid::Scheme::linear->new(
         min   => $exp{min},
         nbins => $exp{nbins},
         binw  => $exp{binw},
@@ -45,7 +45,7 @@ use PDLx::Bin1D::Scheme::linear;
           PDL->new( 0.5, 1.3, 2.1, 2.9, 3.7, 4.5, 5.3, 6.1, 6.9, 7.7 ),
     );
 
-    my $grid = PDLx::Bin1D::Scheme::linear->new(
+    my $grid = PDLx::Bin1D::Grid::Scheme::linear->new(
         max   => $exp{max},
         nbins => $exp{nbins},
         binw  => $exp{binw},
@@ -71,7 +71,7 @@ subtest 'MIN | MAX | BINW' => sub {
               PDL->new( 0.5, 1.3, 2.1, 2.9, 3.7, 4.5, 5.3, 6.1, 6.9, 7.7 ),
         );
 
-        my $grid = PDLx::Bin1D::Scheme::linear->new(
+        my $grid = PDLx::Bin1D::Grid::Scheme::linear->new(
             min  => $exp{min},
             max  => $exp{max},
             binw => $exp{binw},
@@ -97,7 +97,7 @@ subtest 'MIN | MAX | BINW' => sub {
               PDL->new( 0.5, 1.3, 2.1, 2.9, 3.7, 4.5, 5.3, 6.1, 6.9, 7.7, 8.5 ),
         );
 
-        my $grid = PDLx::Bin1D::Scheme::linear->new(
+        my $grid = PDLx::Bin1D::Grid::Scheme::linear->new(
             min  => $exp{min},
             max  => 8.0,
             binw => $exp{binw},
@@ -124,7 +124,7 @@ subtest 'MIN | MAX | BINW' => sub {
           PDL->new( 0.5, 1.3, 2.1, 2.9, 3.7, 4.5, 5.3, 6.1, 6.9, 7.7 ),
     );
 
-    my $grid = PDLx::Bin1D::Scheme::linear->new(
+    my $grid = PDLx::Bin1D::Grid::Scheme::linear->new(
         max   => $exp{max},
         min   => $exp{min},
         nbins => $exp{nbins},
@@ -138,7 +138,7 @@ subtest 'MIN | MAX | BINW' => sub {
 
 
 
-like ( exception { PDLx::Bin1D::Scheme::linear->new( max => 1, min => 0, nbins => 10, binw  => 3 ) },
+like ( exception { PDLx::Bin1D::Grid::Scheme::linear->new( max => 1, min => 0, nbins => 10, binw  => 3 ) },
 	 qr/overspecified/, "overspecified" );
 
 # check all underspecified combinations
@@ -146,7 +146,7 @@ like ( exception { PDLx::Bin1D::Scheme::linear->new( max => 1, min => 0, nbins =
     my %args = ( max => 1, min => 0, nbins => 10, binw => 3 );
     my $s = Set::Partition->new( list => [ qw( max min nbins binw ) ], partition => [ 2 ] );
 
-    like ( exception { PDLx::Bin1D::Scheme::linear->new( map { $_ => $args{$_} } @{$_->[0]} ) },
+    like ( exception { PDLx::Bin1D::Grid::Scheme::linear->new( map { $_ => $args{$_} } @{$_->[0]} ) },
 	   qr/underspecified/,
 	   join( ' ', 'underspecified: ', @{$_->[0]} ),
 	 )

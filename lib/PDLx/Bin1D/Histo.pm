@@ -128,8 +128,8 @@ sub BUILDARGS {
         ) unless defined $args->{x} && $args->{x}->$_isa( 'PDL' );
 
         croak(
-            "attribute 'bins' must inherit from class 'PDLx::Bin1D::Base'\n" )
-          unless $bins->$_isa( 'PDLx::Bin1D::Base' );
+            "attribute 'bins' must inherit from class 'PDLx::Bin1D::Grid::Base'\n" )
+          unless $bins->$_isa( 'PDLx::Bin1D::Grid::Base' );
 
         $args->{nbins} = $bins->nbins;
         $args->{idx}   = $bins->bin( $args->{x} );

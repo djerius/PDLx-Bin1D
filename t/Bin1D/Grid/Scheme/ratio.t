@@ -10,7 +10,7 @@ use Test::Fatal;
 use POSIX;
 
 use PDL::Lite;
-use PDLx::Bin1D::Scheme::ratio;
+use PDLx::Bin1D::Grid::Scheme::ratio;
 
 my %exp = (
     oob       => 0,
@@ -28,7 +28,7 @@ my %exp = (
 
     my %exp = %exp;
 
-    my $grid = PDLx::Bin1D::Scheme::ratio->new(
+    my $grid = PDLx::Bin1D::Grid::Scheme::ratio->new(
         min   => $exp{min},
         binw  => $exp{binw},
         ratio => $exp{ratio},
@@ -45,7 +45,7 @@ my %exp = (
 
     my %exp = %exp;
 
-    my $grid = PDLx::Bin1D::Scheme::ratio->new(
+    my $grid = PDLx::Bin1D::Grid::Scheme::ratio->new(
         min   => $exp{min},
         binw  => $exp{binw},
         ratio => $exp{ratio},

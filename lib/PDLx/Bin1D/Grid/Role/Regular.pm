@@ -1,6 +1,6 @@
 #!perl
 
-package PDLx::Bin1D::Role::Regular;
+package PDLx::Bin1D::Grid::Role::Regular;
 
 use Carp;
 

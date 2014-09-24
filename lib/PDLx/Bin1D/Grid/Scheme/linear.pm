@@ -1,4 +1,4 @@
-package PDLx::Bin1D::Scheme::linear;
+package PDLx::Bin1D::Grid::Scheme::linear;
 
 # min:max[:(#nbins|binw)]
 use Moo;
@@ -26,7 +26,7 @@ use constant rangeRE => qr /^
 				   $/x;
 
 
-extends 'PDLx::Bin1D::Base';
+extends 'PDLx::Bin1D::Grid::Base';
 
 my %AttrFlag;
 

@@ -1,11 +1,11 @@
-package PDLx::Bin1D::Scheme::ratio;
+package PDLx::Bin1D::Grid::Scheme::ratio;
 
 use Moo;
 use Carp;
 
-use PDLx::Bin1D::Constants;
+use PDLx::Bin1D::Grid::Constants;
 
-extends 'PDLx::Bin1D::Base';
+extends 'PDLx::Bin1D::Grid::Base';
 
 use Types::Standard qw[ Bool ];
 use Types::Common::Numeric qw[ PositiveNum PositiveInt ];
@@ -92,6 +92,6 @@ sub _build_bin_edges {
 
 sub autoscale_flags { AS_MIN }
 
-with 'PDLx::Bin1D::Role::AutoScale';
+with 'PDLx::Bin1D::Grid::Role::AutoScale';
 
 1;

@@ -10,7 +10,7 @@ use Safe::Isa;
 use Test::Lib;
 use My::Test;
 
-use PDLx::Bin1D::Base;
+use PDLx::Bin1D::Grid::Base;
 use PDLx::Bin1D::Histo;
 
 use PDL::Lite;
@@ -33,7 +33,7 @@ sub init_piddles : Test( startup => 2 ) {
     $stf{error} = $stf{x}->random / 15;
 
     $stf{nelem} = PDL->new( 5, ( 10 ) x 10, 7 );
-    $stf{grid} = PDLx::Bin1D::Base->new( bin_edges => $bin_edges );
+    $stf{grid} = PDLx::Bin1D::Grid::Base->new( bin_edges => $bin_edges );
 
     $stf{nbins} = $stf{grid}->nbins;
     $stf{index} = $stf{grid}->bin( $stf{x} );

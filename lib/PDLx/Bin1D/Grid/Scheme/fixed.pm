@@ -1,10 +1,10 @@
-package PDLx::Bin1D::Scheme::fixed;
+package PDLx::Bin1D::Grid::Scheme::fixed;
 
 use Moo;
 
 use Types::Standard qw[ InstanceOf ];
 
-extends 'PDLx::Bin1D::Base';
+extends 'PDLx::Bin1D::Grid::Base';
 use PDL::Lite;
 
 has '+bin_edges' => (

@@ -1,6 +1,6 @@
 #!perl
 
-package PDLx::Bin1D::Base;
+package PDLx::Bin1D::Grid::Base;
 
 use Carp;
 

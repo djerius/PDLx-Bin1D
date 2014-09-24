@@ -1,4 +1,4 @@
-package PDLx::Bin1D::Constants;
+package PDLx::Bin1D::Grid::Constants;
 
 use Exporter qw[ import ];
 our @EXPORT;

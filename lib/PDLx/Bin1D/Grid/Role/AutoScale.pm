@@ -1,10 +1,10 @@
 #!perl
 
-package PDLx::Bin1D::Role::AutoScale;
+package PDLx::Bin1D::Grid::Role::AutoScale;
 
 use Carp;
 
-use PDLx::Bin1D::Constants;
+use PDLx::Bin1D::Grid::Constants;
 
 use Moo::Role;
 
