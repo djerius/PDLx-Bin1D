@@ -13,17 +13,20 @@ int error_poisson = flags & BIN_ARG_ERROR_POISSON;
 int error_rss     = flags & BIN_ARG_ERROR_RSS;
 int save_oob      = flags & BIN_ARG_SAVE_OOB;
 
+<% $PDL_Indx %> offset = $COMP(offset);
+
 threadloop %{
 
     <% $PDL_Indx %> nbins_m1 = $nbins() - 1;
-    <% $PDL_Indx %> offset = $COMP(offset);
   <%
     # intialize output and temp bin data one at a time to
     # avoid trashing the cache
-    join( "\n", map {
-	         "loop(nb) %{ \$${_}() = 0; %}"
-	        }   qw/ nelem b_signal b_mean
-                        b_error2 b_m2 b_weight /
+
+    join(
+        "\n",
+        map { "loop(nb) %{ \$${_}() = 0; %}" }
+          qw/ nelem b_signal b_mean
+          b_error2 b_m2 b_weight /
     );
   %>
 
