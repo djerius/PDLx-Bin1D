@@ -11,3 +11,13 @@ blibdirs
 .gz$
 .bs$
 ^Bin1D.*
+^MYMETA\.yml$
+^MYMETA\.json$
+typemap
+_build/.*
+\#.*\#$
+.*.orig$
+.*.o$
+lib/PDLx/Bin1D.(c|pm|xs)$
+Build$
+Makefile.PL
