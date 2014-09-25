@@ -15,14 +15,14 @@ use Type::Params qw[ compile ];
         $bin1d_check = compile(
             slurpy Dict [
                 x          => InstanceOf ['PDL'],
-                y          => Optional   [ InstanceOf ['PDL'] ],
+                signal     => Optional   [ InstanceOf ['PDL'] ],
                 index      => Optional   [ InstanceOf ['PDL'] ],
                 error      => Optional   [ InstanceOf ['PDL'] ],
                 error_algo => Optional   [ Enum [ keys %MapErrorAlgo ] ],
                 oob        => Optional   [ Bool ],
                 grid  	   => Optional 	 [ InstanceOf ['PDLx::Bin1D::Grid::Base'] ],
                 nbins 	   => Optional 	 [PositiveInt],
-                step  	   => Optional 	 [PositiveNum],
+                binw  	   => Optional 	 [PositiveNum],
                 min   	   => Optional 	 [ Num ],
                 max   	   => Optional 	 [ Num ],
                 stats 	   => Optional 	 [ Bool ],
@@ -36,9 +36,6 @@ use Type::Params qw[ compile ];
     sub bin1d {
 
         my ( $args ) = $bin1d_check->( @_ );
-
-        $args->{binw} = delete $args->{step};
-        $args->{signal} = delete $args->{y} if defined $args->{y};
 
         my @got = grep { defined $args->{$_} } @grid_args;
         my $got = join( ' ', @got );
