@@ -62,7 +62,7 @@ sub bin_on_index {
     $opt{maxnbins} = PDL::Core::topdl( $opt{nbins} )->max;
 
     my @pin   = qw[ signal index error nbins ];
-    my @pout  = qw[ nelem b_signal b_error b_mean ];
+    my @pout  = qw[ nelem b_signal b_error b_mean b_min b_max ];
     my @ptmp  = qw[ b_error2 b_m2 b_weight  ];
     my @oargs = qw[ flags maxnbins offset ];
 
@@ -242,6 +242,12 @@ algorithm specified via C<error_algo>.
 
 A piddle containing the possibly weighted mean of the signal in each
 bin.
+
+=item C<min>
+
+=item C<max>
+
+Piddles containing the minimum and maximum values of the signal in each bin.
 
 =back
 

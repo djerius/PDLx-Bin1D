@@ -27,6 +27,13 @@ threadloop %{
     );
   %>
 
+  /* if we could preset min & max to the initial value in a bin,
+     we could shave off a comparison.  Unfortunately, we can't
+     do that, as we can't know apriori which is the first
+     element in a bin. */
+  loop(nb) %{ $b_min() =  DBL_MAX; %}
+  loop(nb) %{ $b_max() = -DBL_MAX; %}
+
 
   loop(n) %{
 
@@ -59,9 +66,11 @@ threadloop %{
     else if ( index < 0 || index > nbins_m1 )
 	continue;
 
-
     nelem = ++$nelem( nb => index );
     $b_signal(nb => index)  += signal;
+
+    if ( signal < $b_min( nb => index ) ) $b_min( nb => index ) = signal;
+    if ( signal > $b_max( nb => index ) ) $b_max( nb => index ) = signal;
 
     if ( have_error ) {
 

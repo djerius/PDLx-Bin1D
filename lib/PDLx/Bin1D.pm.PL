@@ -316,6 +316,8 @@ pp_def(
         'double [o] b_signal(nb)',
         'double [o] b_error(nb)',
         'double [o] b_mean(nb)',
+        'double [o] b_min(nb)',
+        'double [o] b_max(nb)',
         'double [t] b_error2(nb)',
         'double [t] b_m2(nb)',
         'double [t] b_weight(nb)',

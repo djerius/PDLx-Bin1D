@@ -17,7 +17,7 @@ use base 'Test::Class';
 
 # initialize, so can be reused in tests
 
-sub init_piddles : Test( startup => 2 ) {
+sub init_piddles : Test( startup ) {
 
     my %stf;
 
@@ -41,6 +41,17 @@ sub init_piddles : Test( startup => 2 ) {
         $index->where( $index > 9 ) .= 10;
         $index;
     };
+
+    # min and max
+    $stf{min} = PDL->zeroes( PDL::double, $stf{nbins} + 2 );
+    $stf{max} = $stf{min}->copy;
+
+    for my $idx ( 0 .. $stf{nbins} + 1 ) {
+	my $pdl = $stf{y}->where( $stf{index} + 1 == $idx );
+	$stf{min}->set( $idx, $pdl->min );
+	$stf{max}->set( $idx, $pdl->max );
+
+    }
 
     $stf{y_hist} = _whistogram( \%stf, $stf{y} );
 
@@ -85,7 +96,7 @@ sub test_base : Test(9) {
 }
 
 # y, no error
-sub test_y : Test(9) {
+sub test_y : Test(13) {
 
     my $stash = shift;
 
@@ -109,6 +120,9 @@ sub test_y : Test(9) {
 
     my $mean = $stash->{y_hist} / $stash->{nelem};
     is_pdl( $bins->{mean}, $mean, 'mean' );
+
+    is_pdl( $bins->{min},    $stash->{min},   'min' );
+    is_pdl( $bins->{max},    $stash->{max},   'max' );
 
     # explicitly set output piddle so get the correct type.
     my $dev2 = _whistogram( $stash,
@@ -148,7 +162,7 @@ sub test_err : Test(9) {
     is_pdl( $bins->{error}, sqrt( $error2 ), 'RSS' );
 }
 
-sub test_y_err : Test(9) {
+sub test_y_err : Test(13) {
 
     my $stash = shift;
 
@@ -176,6 +190,9 @@ sub test_y_err : Test(9) {
 
     my $mean = _whistogram( $stash, $stash->{y} * $wt ) / $wt_hist;
     is_pdl( $bins->{mean}, $mean, 'mean' );
+
+    is_pdl( $bins->{min},    $stash->{min},   'min' );
+    is_pdl( $bins->{max},    $stash->{max},   'max' );
 
     my $error = sqrt(
         _whistogram( $stash,
