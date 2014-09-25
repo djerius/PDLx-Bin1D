@@ -238,6 +238,9 @@ pp_addhdr(
 );
 
 
+push @EXPORT_OK, 'bin1d';
+pp_addpm( slurp( 'bin1d.pl' ) );
+
 push @EXPORT_OK, 'bin_adaptive_snr';
 pp_def(
     'bin_adaptive_snr',
