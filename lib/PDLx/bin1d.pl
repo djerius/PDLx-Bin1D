@@ -74,11 +74,15 @@ use Type::Params qw[ compile ];
             }
             else {
 
+                # all the same, just need one.
+                my $binw = $grid->binw->at( 0 );
+
                 my $bin
                   = defined $args->{signal}
-                  ? PDL::Primitive::whistogram( $x, $args->{signal}, $grid->binw, $grid->in,
-                    $grid->nbins )
-                  : PDL::Primitive::histogram( $x, $grid->binw, $grid->in, $grid->nbins );
+                  ? PDL::Primitive::whistogram( $x, $args->{signal},
+                    $binw, $grid->in, $grid->nbins )
+                  : PDL::Primitive::histogram( $x, $binw, $grid->in,
+                    $grid->nbins );
 
                 $bin = $bin->slice( '1:-2' )
                   unless $args->{oob};
