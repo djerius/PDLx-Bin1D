@@ -9,7 +9,7 @@ my $build = Module::Build->new(
 
     dist_name            => 'PDLx-Bin1D',
     dist_version_from    => 'lib/PDLx/Bin1D.pm.PL',
-    license              => 'gpl3',
+    license              => 'GPL_3',
     create_license       => 1,
     recursive_test_files => 1,
     PL_files             => {
