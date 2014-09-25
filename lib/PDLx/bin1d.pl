@@ -11,6 +11,7 @@ use Type::Params qw[ compile ];
 
     BEGIN {
 
+        #<<< no perltidy
         $bin1d_check = compile(
             slurpy Dict [
                 x          => InstanceOf ['PDL'],
@@ -18,24 +19,15 @@ use Type::Params qw[ compile ];
                 index      => Optional   [ InstanceOf ['PDL'] ],
                 error      => Optional   [ InstanceOf ['PDL'] ],
                 error_algo => Optional   [ Enum [ keys %MapErrorAlgo ] ],
-                oob        => Optional   [Bool],
-                grid  => Optional [ InstanceOf ['PDLx::Bin1D::Grid::Base'] ],
-                nbins => Optional [PositiveInt],
-                step  => Optional [PositiveNum],
-                min   => Optional [Num],
-                max   => Optional [Num],
-                stats => Optional [Bool],
+                oob        => Optional   [ Bool ],
+                grid  	   => Optional 	 [ InstanceOf ['PDLx::Bin1D::Grid::Base'] ],
+                nbins 	   => Optional 	 [PositiveInt],
+                step  	   => Optional 	 [PositiveNum],
+                min   	   => Optional 	 [ Num ],
+                max   	   => Optional 	 [ Num ],
+                stats 	   => Optional 	 [ Bool ],
             ] );
-
-
-        # legal combinations
-
-        # x nbins min step
-        # x min max step
-        # x min max nbins
-        # x grid
-        # index nbins
-
+	#>>> no perltidy
 
     }
 
