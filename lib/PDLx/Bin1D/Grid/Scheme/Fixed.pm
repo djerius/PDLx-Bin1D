@@ -1,4 +1,4 @@
-package PDLx::Bin1D::Grid::Scheme::fixed;
+package PDLx::Bin1D::Grid::Scheme::Fixed;
 
 use Moo;
 

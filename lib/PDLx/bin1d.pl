@@ -1,6 +1,6 @@
 #!perl
 
-use PDLx::Bin1D::Grid::Scheme::linear;
+use PDLx::Bin1D::Grid::Scheme::Linear;
 use PDL::Lite;
 use Types::Common::Numeric qw[ PositiveInt PositiveNum ];
 use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Num ];
@@ -63,7 +63,7 @@ use Type::Params qw[ compile ];
         {
 
             my $x    = delete $got->{x};
-            my $grid = PDLx::Bin1D::Grid::Scheme::linear->new( $got );
+            my $grid = PDLx::Bin1D::Grid::Scheme::Linear->new( $got );
 
             if ( $args->{stats} ) {
 

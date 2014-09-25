@@ -1,4 +1,4 @@
-package PDLx::Bin1D::Grid::Scheme::linear;
+package PDLx::Bin1D::Grid::Scheme::Linear;
 
 # min:max[:(#nbins|binw)]
 use Moo;

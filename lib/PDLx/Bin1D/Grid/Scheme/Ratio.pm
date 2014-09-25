@@ -1,4 +1,4 @@
-package PDLx::Bin1D::Grid::Scheme::ratio;
+package PDLx::Bin1D::Grid::Scheme::Ratio;
 
 use Moo;
 use Carp;

@@ -8,7 +8,7 @@ use Set::Partition;
 use Test::Fatal;
 
 use PDL::Lite;
-use PDLx::Bin1D::Grid::Scheme::fixed;
+use PDLx::Bin1D::Grid::Scheme::Fixed;
 
 {
 
@@ -20,7 +20,7 @@ use PDLx::Bin1D::Grid::Scheme::fixed;
 
 
 
-    my $grid = PDLx::Bin1D::Grid::Scheme::fixed->new(
+    my $grid = PDLx::Bin1D::Grid::Scheme::Fixed->new(
 					       oob => 0,
 					       bin_edges => $exp{bin_edges}->copy,
     );
