@@ -50,6 +50,9 @@ use constant;
         my $got = flags( \%bits, @got );
         my %got = map { $_ => $args->{$_} } @got;
 
+	# don't need to pass this to any of the target routines
+	my $want_stats = delete $args->{stats};
+
         my %rest = %$args;
         delete @rest{@got};
 
@@ -65,7 +68,7 @@ use constant;
             my $x    = delete $got{x};
             my $grid = Math::Histo::Grid::Linear->new( %got );
 
-            if ( $args->{stats} ) {
+            if ( $want_stats ) {
 
 		my $index = PDL::Bin1D::_vsearch_bin_inclusive( $got{x}, $got{grid}->bin_edges );
                 $result = bin_on_index(
