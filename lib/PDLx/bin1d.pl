@@ -19,7 +19,7 @@ use constant;
         #<<< no perltidy
         $bin1d_check = compile(
             slurpy Dict [
-                x          => InstanceOf ['PDL'],
+                x          => Optional   [ InstanceOf ['PDL'] ],
                 signal     => Optional   [ InstanceOf ['PDL'] ],
                 index      => Optional   [ InstanceOf ['PDL'] ],
                 error      => Optional   [ InstanceOf ['PDL'] ],
@@ -113,6 +113,12 @@ use constant;
                 %rest,
                 nbins => $got{grid}->nbins,
                 index => $got{index} );
+
+        }
+
+        elsif ( $got == ( INDEX | NBINS ) ) {
+
+            $result = bin_on_index(%rest, %got);
 
         }
 
