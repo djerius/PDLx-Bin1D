@@ -5,9 +5,14 @@ use PDL::Lite;
 use Types::Common::Numeric qw[ PositiveInt PositiveNum ];
 use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Num ];
 use Type::Params qw[ compile ];
+use PDLx::Bin1D::Utils;
+use constant;
+
 
 {
     my $bin1d_check;
+
+    my @grid_args;
 
     BEGIN {
 
@@ -29,30 +34,36 @@ use Type::Params qw[ compile ];
             ] );
 	#>>> no perltidy
 
+	@grid_args = qw[ x nbins min max binw grid index ];
+
+	constant->import( { bitflags( map {uc $_ } @grid_args ) } );
+
     }
 
-    my @grid_args = qw[ x nbins min max binw grid index ];
+    my %bits = bitflags( @grid_args );
 
     sub bin1d {
 
         my ( $args ) = $bin1d_check->( @_ );
 
         my @got = grep { defined $args->{$_} } @grid_args;
-        my $got = join( ' ', @got );
-        my %got = @{$args}{@got};
+        my $got = flags( \%bits, @got );
+        my %got = map { $_ => $args->{$_} } @got;
 
         my %rest = %$args;
         delete @rest{@got};
 
-        my $result = {};
 
-        if (   $got eq 'x nbins min binw'
-            || $got eq 'x min max step'
-            || $got eq 'x min max nbins' )
+        my $result;
+
+        if (   $got == ( X | MIN | BINW | NBINS )
+            || $got == ( X | MIN | MAX  | BINW  )
+            || $got == ( X | MIN | MAX  | NBINS )
+	   )
         {
 
-            my $x    = delete $got->{x};
-            my $grid = Math::Histo::Grid::Linear->new( $got );
+            my $x    = delete $got{x};
+            my $grid = Math::Histo::Grid::Linear->new( %got );
 
             if ( $args->{stats} ) {
 
@@ -61,6 +72,8 @@ use Type::Params qw[ compile ];
                     %rest,
                     nbins => $grid->nbins,
                     index => $index,
+		);
+
             }
             else {
 
@@ -80,9 +93,11 @@ use Type::Params qw[ compile ];
                 $result = { signal => $bin };
             }
 
+	    $result->{grid} = $grid;
+
         }
 
-        elsif ( $got eq 'x grid' ) {
+        elsif ( $got == ( X | GRID )  ) {
 
 	    my $index = PDL::Bin1D::_vsearch_bin_inclusive( $got{x}, $got{grid}->bin_edges );
             $result = bin_on_index(
@@ -92,7 +107,7 @@ use Type::Params qw[ compile ];
 
         }
 
-        elsif ( $got eq 'index grid' ) {
+        elsif ( $got == ( INDEX | GRID  ) ) {
 
             $result = bin_on_index(
                 %rest,
@@ -108,7 +123,6 @@ use Type::Params qw[ compile ];
         }
 
         return $result;
-
     }
 
 }
