@@ -33,6 +33,9 @@ use File::Spec::Functions qw[ catfile ];
 use Text::Template::LocalVars;
 use Try::Tiny;
 
+use lib 'lib';
+
+use PDLx::Bin1D::Utils;
 
 use constant LIBDIR => ( fileparse( $0 ) )[1];
 
@@ -52,11 +55,6 @@ my $IndexParsType = eval { typefld( 'PDL_IND', 'ppforcetype' ) }
 
 my $IndexCType = eval { typefld( 'PDL_IND', 'ctype' ) } ? 'PDL_Indx' : 'long';
 
-sub bitflags {
-    my $bit = 1;
-    return shift(), 1,
-      map { $bit <<= 1; $_ => $bit; } @_;
-}
 
 my %CONSTANTS = (
     BIN_ARG => {
@@ -172,6 +170,8 @@ pp_bless( __PACKAGE__ );
 pp_addpm( { At => 'Top' }, <<'EOD' );
 use strict;
 use warnings;
+
+use PDLx::Bin1D::Utils;
 
 our @EXPORT_OK;
 our %EXPORT_TAGS;
