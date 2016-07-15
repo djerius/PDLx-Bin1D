@@ -38,6 +38,7 @@ sub is_pdl {
     my $tb = $CLASS->builder;
 
     $exp = topdl( $exp );
+    $got = topdl( $got );
 
     unless ( is_deeply( [ $got->dims ], [ $exp->dims ], "$test_name: dims" ) ) {
 	$tb->diag( join("\n",
