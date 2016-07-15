@@ -1,6 +1,6 @@
 #!perl
 
-use PDLx::Bin1D::Grid::Scheme::Linear;
+use Math::Histo::Grid::Linear;
 use PDL::Lite;
 use Types::Common::Numeric qw[ PositiveInt PositiveNum ];
 use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Num ];
@@ -20,7 +20,7 @@ use Type::Params qw[ compile ];
                 error      => Optional   [ InstanceOf ['PDL'] ],
                 error_algo => Optional   [ Enum [ keys %MapErrorAlgo ] ],
                 oob        => Optional   [ Bool ],
-                grid  	   => Optional 	 [ InstanceOf ['PDLx::Bin1D::Grid::Base'] ],
+                grid  	   => Optional 	 [ InstanceOf ['Math::Histo::Grid::Base'] ],
                 nbins 	   => Optional 	 [PositiveInt],
                 binw  	   => Optional 	 [PositiveNum],
                 min   	   => Optional 	 [ Num ],
@@ -52,25 +52,26 @@ use Type::Params qw[ compile ];
         {
 
             my $x    = delete $got->{x};
-            my $grid = PDLx::Bin1D::Grid::Scheme::Linear->new( $got );
+            my $grid = Math::Histo::Grid::Linear->new( $got );
 
             if ( $args->{stats} ) {
 
+		my $index = PDL::Bin1D::_vsearch_bin_inclusive( $got{x}, $got{grid}->bin_edges );
                 $result = bin_on_index(
                     %rest,
                     nbins => $grid->nbins,
-                    index => $grid->bin( $x ) );
+                    index => $index,
             }
             else {
 
                 # all the same, just need one.
-                my $binw = $grid->binw->at( 0 );
+                my $binw = $grid->binw->[ 0 ];
 
                 my $bin
                   = defined $args->{signal}
                   ? PDL::Primitive::whistogram( $x, $args->{signal},
-                    $binw, $grid->in, $grid->nbins )
-                  : PDL::Primitive::histogram( $x, $binw, $grid->in,
+                    $binw, $grid->min, $grid->nbins )
+                  : PDL::Primitive::histogram( $x, $binw, $grid->min,
                     $grid->nbins );
 
                 $bin = $bin->slice( '1:-2' )
@@ -83,10 +84,11 @@ use Type::Params qw[ compile ];
 
         elsif ( $got eq 'x grid' ) {
 
+	    my $index = PDL::Bin1D::_vsearch_bin_inclusive( $got{x}, $got{grid}->bin_edges );
             $result = bin_on_index(
                 %rest,
                 nbins => $got{grid}->nbins,
-                index => $got{grid}->bin( $got{x} ) );
+                index => $index );
 
         }
 
