@@ -370,48 +370,6 @@ pp_def(
 
 
 
-# This is a private copy of  code which will be in a future version
-# of PDL. Don't use it!
-
-# xs[i] is the INnclusive left edge of the bin
-# return i, s.t. xs[i] <= value < xs[i+1].
-# returns -1 if xs[0] > value
-# returns N-1 if xs[-1] <= value
-pp_def(
-    '_vsearch_bin_inclusive',
-    HandleBad => 0,
-    PMFunc    => '',
-    BadDoc    => 'needs major (?) work to handles bad values',
-    Pars      => join( ';', 'i()', 'x(n)', "$IndexParsType [o]ip()", ),
-    GenericTypes => [ 'F', 'D' ],    # too restrictive ?
-    Code         => fill_in_string(
-        q[threadloop %{
-
-                   <% $PDL_Indx %> n1 = $SIZE(n)-1;
-                   <% $PDL_Indx %> low = 0;
-                   <% $PDL_Indx %> high = n1;
-                   <% $PDL_Indx %> mid;
-
-		   $GENERIC() value = $i();
-
-                   /* determine sort order of data */
-                   int up = ($x(n => n1) >= $x(n => 0));
-
-                   while (low <= high ) {
-                       /* ensure we don't overflow (low+high)>>1 for large values of low + high */
-                       mid = low + (( high - low )>> 1);
-                       if ( ( $x(n => mid) <= value ) == up ) low  = mid + 1;
-                       else                                   high = mid - 1;
-                   }
-                   $ip() = up ? high: low;
-
-                %}
-]
-    ),
-    Doc => undef
-);
-
-
 pp_addpm( { At => 'Bot' }, <<'EOD' );
 
 =head1 BUGS AND LIMITATIONS

@@ -1,6 +1,6 @@
 #!perl
 
-requires 'PDL';
+requires 'PDL' => 2.008;
 
 on configure => sub {
    requires 'PDL::Core::Dev';
@@ -13,7 +13,7 @@ on build => sub {
 
 on test => sub {
 
-   requires 'PDL';
+   requires 'PDL' => 2.008;
    requires 'Test::More';
    requires 'Test::Lib';
    requires 'Test::Fatal';

@@ -1,7 +1,7 @@
 #!perl
 
 use Math::Histo::Grid::Linear;
-use PDL::Lite;
+use PDL::Lite 2.008;
 use Types::Common::Numeric qw[ PositiveInt PositiveNum ];
 use Types::Standard qw[ Optional InstanceOf slurpy Dict Bool Enum Num ];
 use Type::Params qw[ compile ];
@@ -70,7 +70,7 @@ use constant;
 
             if ( $want_stats ) {
 
-		my $index = PDL::Bin1D::_vsearch_bin_inclusive( $got{x}, $got{grid}->bin_edges );
+		my $index = PDL::vsearch( $got{x}, $got{grid}->bin_edges, { mode => 'bin_inclusive' }  );
                 $result = bin_on_index(
                     %rest,
                     nbins => $grid->nbins,
@@ -102,7 +102,7 @@ use constant;
 
         elsif ( $got == ( X | GRID )  ) {
 
-	    my $index = PDL::Bin1D::_vsearch_bin_inclusive( $got{x}, $got{grid}->bin_edges );
+	    my $index = PDL::vsearch( $got{x}, $got{grid}->bin_edges, { mode => 'bin_inclusive' }  );
             $result = bin_on_index(
                 %rest,
                 nbins => $got{grid}->nbins,
