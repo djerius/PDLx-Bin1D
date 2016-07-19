@@ -1,33 +1,33 @@
 Revision history for PDLx-Bin1D
 
-0.12   Fri Apr 24 16:32:15 EDT 2009
+0.12	2009-04-27T14:06:54-04:00
        - bin_err bin folding is now optional
 
-0.11   Fri Apr 24 15:53:48 EDT 2009
+0.11	2009-04-24T15:58:31-04:00
        - bin_err widths constraints were handled incorrectly
 
-0.10   Thu Apr 23 16:29:49 EDT 2009
+0.10	2009-04-23T16:31:27-04:00
        - bin_err can now use width constraints
        - bin_err returns per-bin status code
 
-0.06   Fri Apr 25 17:17:22 EDT 2008
+0.06	2008-04-25T17:26:54-04:00
        - bin_err & bin_sdev now handle bad values
 
-0.05   Fri Apr 25 13:14:58 EDT 2008
+0.05	2008-04-25T13:28:00-04:00
        - new bin_err routine
        - refactored bin_sdev interface; not backwards compatible
 
-0.04   Wed Apr 23 15:59:10 EDT 2008
+0.04	2008-04-23T16:00:07-04:00
        - bin_sdev folding of last bin sometimes led to S/N falling below
          the threshold.
 
-0.03   Wed Apr 23 14:45:40 EDT 2008
+0.03	2008-04-23T14:47:19-04:00
        - massive bug fixes. last version was quite broken
        - changed name from hist* to bin* as it's really a binning thing.
 
-0.02   Wed Apr 23 10:37:15 EDT 2008
+0.02	2008-04-23T10:38:32-04:00
        - hist_sdev now returns indices to the minimum and maximum bin values
 
-0.01  
+0.01	2008-04-23T09:50:53-04:00
        Initial release.
 
