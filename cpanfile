@@ -1,6 +1,11 @@
 #!perl
 
 requires 'PDL' => 2.008;
+requires 'Math::Histo::Grid::Linear';
+requires 'Types::Common::Numeric';
+requires 'Types::Standard';
+requires 'Type::Params';
+requires 'Try::Tiny';
 
 on configure => sub {
    requires 'PDL::Core::Dev';
