@@ -48,6 +48,7 @@ our @pprec = ( catfile( @dirh, 'Bin1D.pd'), 'Bin1D', 'PDLx::Bin1D' );
 my %args = pdlpp_stdargs(\@pprec);
 
 makemaker_args( %args );
+makemaker_args( NO_MYMETA => 0 );
 
 makemaker_args( PM => { catfile( @dirh, 'Bin1D', 'Utils.pm' ) => catfile( '$(INST_LIB)', 'PDLx', 'Bin1D', 'Utils.pm' ) } );
 
