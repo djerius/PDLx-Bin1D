@@ -209,10 +209,6 @@ my %MapErrorAlgo = (
 );
 EOD
 
-pp_addpm( { At => 'Top' }, <<"EOD" );
-BEGIN{ our \$VERSION = '$VERSION' };
-EOD
-
 pp_addpm( { At => 'Top' }, <<'EOD' );
 =begin dealing_with_undocumented_boilerplate_routines
 
