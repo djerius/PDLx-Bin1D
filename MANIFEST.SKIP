@@ -20,4 +20,3 @@ _build/.*
 .*.o$
 lib/PDLx/Bin1D.(c|pm|xs)$
 Build$
-Makefile.PL
