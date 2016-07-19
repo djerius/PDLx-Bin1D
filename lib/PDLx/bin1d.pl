@@ -36,18 +36,18 @@ use constant;
 
 	@grid_args = qw[ x nbins min max binw grid index ];
 
-	constant->import( { bitflags( map {uc $_ } @grid_args ) } );
+	constant->import( { _bitflags( map {uc $_ } @grid_args ) } );
 
     }
 
-    my %bits = bitflags( @grid_args );
+    my %bits = _bitflags( @grid_args );
 
     sub bin1d {
 
         my ( $args ) = $bin1d_check->( @_ );
 
         my @got = grep { defined $args->{$_} } @grid_args;
-        my $got = flags( \%bits, @got );
+        my $got = _flags( \%bits, @got );
         my %got = map { $_ => $args->{$_} } @got;
 
 	# don't need to pass this to any of the target routines
@@ -136,3 +136,19 @@ use constant;
 
 }
 1;
+
+=pod
+
+=head2 bin1d
+
+=for usage
+
+  %hash = bin1d( %options )
+
+=for ref
+
+Bin a one dimensional data set.  B<bin1d> is a user-friendly front end to
+other one dimensional binning routines.
+
+=cut
+
