@@ -1,4 +1,4 @@
-CXC-PDL-Bin1D
+PDLx::Bin1D
 
 This module provides various data binning functions.  This module is
 a test bed for future inclusion in a PDL::Bin class.
@@ -23,7 +23,7 @@ COPYRIGHT AND LICENCE
 
 Copyright (c) 2008 The Smithsonian Astrophysical Observatory
 
-CXC-PDL-Bin1D is free software: you can redistribute it and/or modify
+PDLx::Bin1D is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or (at
 your option) any later version.
