@@ -44,4 +44,5 @@ on develop => sub {
     requires 'Test::Perl::Critic';
     requires 'Test::CPAN::Changes';
     requires 'Test::CPAN::Meta';
+    requires 'Test::CPAN::Meta::JSON';
 };
