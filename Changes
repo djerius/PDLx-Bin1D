@@ -1,5 +1,12 @@
 Revision history for PDLx-Bin1D
 
+0.20	2016-07-19T15:42:01-0400
+
+  [MAJOR CHANGES]
+
+    * essentially, this is a whole new module built on the
+      functionality of CXC::PDL::Bin1D.  Nothing is the same.
+
 0.12	2009-04-27T14:06:54-04:00
        - bin_err bin folding is now optional
 

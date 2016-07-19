@@ -42,7 +42,7 @@ use PDL::Types qw[ typefld ];
 my $IndexParsType = eval { typefld( 'PDL_IND', 'ppforcetype' ) }
 || typefld( 'PDL_L', 'ppforcetype' );
 
-our $VERSION = '0.01';
+our $VERSION = '0.20';
 pp_setversion( $VERSION );
 
 

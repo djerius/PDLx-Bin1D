@@ -2,6 +2,8 @@ package PDLx::Bin1D::Utils;
 
 use Exporter 'import';
 
+our $VERSION = '0.20';
+
 our @EXPORT = qw[ _bitflags _flags ];
 
 sub _bitflags {
